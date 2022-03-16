@@ -5,7 +5,7 @@ require('dotenv').config();
 const cookieParser = require('cookie-parser');
 const userRoute = require('./route/user');
 const productRoute = require('./route/product');
-
+const cors = require('cors');
 // setup app to use express functionality
 const app = express();
 
@@ -22,6 +22,8 @@ mongoose.connect(`mongodb://localhost/${process.env.DB_Name}`,(err=>{
 mongoose.Promise = global.Promise;
 
 // middlwares
+// 
+app.use(cors());
 // access to static uploads folder contents
 app.use('/img',express.static('uploads'));
 // parse requests of content-type - application/json

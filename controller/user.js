@@ -2,6 +2,8 @@ const express = require("express");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const User = require("../model/user");
+const Product = require("../model/product");
+const Review = require("../model/review");
 
 const maxAge = 15 * 24 * 60 * 60;
 // method for creating a token
@@ -36,6 +38,7 @@ const getUser = async (req, res, next) => {
 const addUser = async (req, res, next) => {
   const newUser = {
     userName: req.body.userName,
+    fullName: req.body.fullName,
     email: req.body.email,
     password: req.body.password,
     gender: req.body.gender,
@@ -50,7 +53,7 @@ const addUser = async (req, res, next) => {
       httpOnly: true,
       maxAge: maxAge * 1000,
     });
-    res.status(201).json({ user: result._id });
+    res.status(200).json({ user: result._id });
   } catch (err) {
     next(err);
   }
@@ -94,12 +97,29 @@ const updateUser = async (req, res, next) => {
 
 const deleteUser = async (req, res, next) => {
   try {
-    await User.findByIdAndDelete(req.params.id);
+   const result= await User.findByIdAndDelete(req.params.id);
+  //  delete all product asscoiated with this user
+  // console.log(result);
+    if(result){
+      await Review.deleteMany({
+        user:result._id
+      });
+      await Product.deleteMany({
+        _id:{$in:result.products}
+      })
+    }
     res.status(200).json("user has been deleted...");
   } catch (err) {
     res.status(500).json(err.message);
   }
 };
+const logout = (req,res,next)=>{
+  res.cookie("jwt", "", { maxAge: 1 });
+  // res.clearCookie('jwt'); another way
+  res.status(200).json({
+    msg:'succssfull logout, bye'
+  })
+}
 
 module.exports= {
   getUsers,
@@ -108,5 +128,6 @@ module.exports= {
   login,
   updateUser,
   deleteUser,
+  logout
 };
 

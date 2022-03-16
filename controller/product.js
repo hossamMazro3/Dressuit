@@ -4,10 +4,15 @@ const Review = require("../model/review");
 
 const getProducts = async (req, res, next) => {
   try {
-    const result = await Product.find().populate("user", {
-      userName: 1,
-      image: 1,
-    });
+    const result = await Product.find()
+      .populate("user", {
+        userName: 1,
+        image: 1,
+      })
+      .select({
+        reviews: 0,
+        __v: 0,
+      });
     res.status(200).json(result);
   } catch (err) {
     res.status(500).json(err.message);
@@ -16,10 +21,19 @@ const getProducts = async (req, res, next) => {
 
 const getProduct = async (req, res, next) => {
   try {
-    const result = await Product.findById(req.params.id).populate('user',{
-      userName:1,
-      image:1
-    }).populate('reviews',{content:1});
+    const result = await Product.findById(req.params.id)
+      .populate("user", {
+        userName: 1,
+        image: 1,
+      })
+      .populate({
+        path: "reviews",
+        select: { content: 1 },
+        populate: {
+          path: "user",
+          select: { userName: 1 },
+        },
+      });
 
     res.status(200).json(result);
   } catch (err) {
@@ -38,6 +52,7 @@ const addProduct = async (req, res, next) => {
     description: req.body.description,
     size: JSON.parse(req.body.size),
     color: req.body.color,
+    type: req.body.type,
     purpose: req.body.purpose,
     Images: imgArray,
     user: req.userID,
@@ -47,11 +62,11 @@ const addProduct = async (req, res, next) => {
     if (result) {
       // add this product to user
       await User.findByIdAndUpdate(result.user._id, {
-        $push:{products:result._id},
+        $push: { products: result._id },
       });
     }
 
-    res.status(201).json(result);
+    res.status(200).json(result);
   } catch (err) {
     res.status(500).json(err.message);
   }
@@ -59,32 +74,39 @@ const addProduct = async (req, res, next) => {
 
 const updateProduct = async (req, res, next) => {
   // check of productImages if you want to change uploaded images
-    // takes it and added to property images (array)  which added to body obj
-    if (req.files) {
-      req.files.forEach((element) => {
-        req.Images.push(element.path);
-      });
-    };
-    try {
-      const updatedProduct = await Product.findByIdAndUpdate(
-        req.params.id,
-        {
-          $set: req.body,
-        },
-        { new: true, runValidators: true }
-      );
-      res.status(200).json({
-        msg:"product has successfully updated",
-        updatedProduct
-      });
-    } catch (err) {
-      res.status(500).json(err.message);
-    }
+  // takes it and added to property images (array)  which added to body obj
+  if (req.files) {
+    req.body.Images = [];
+    req.files.forEach((element) => {
+      req.body.Images.push(element.path);
+    });
+  }
+  try {
+    const updatedProduct = await Product.findByIdAndUpdate(
+      req.params.id,
+      {
+        $set: req.body,
+      },
+      { new: true, runValidators: true }
+    );
+    res.status(200).json({
+      msg: "product has successfully updated",
+      updatedProduct,
+    });
+  } catch (err) {
+    res.status(500).json(err.message);
+  }
 };
 
 const deleteProduct = async (req, res, next) => {
   try {
-    await Product.findByIdAndDelete(req.params.id);
+    const result = await Product.findByIdAndDelete(req.params.id);
+    // delete all review on that product
+    if (result) {
+      await Review.deleteMany({
+        _id: { $in: result.reviews },
+      });
+    }
     res.status(200).json("Product has been deleted...");
   } catch (err) {
     res.status(500).json(err.message);
@@ -93,42 +115,54 @@ const deleteProduct = async (req, res, next) => {
 
 //methods to deal with Review
 
-const addReview = async (req,res,next)=>{
+const addReview = async (req, res, next) => {
   const newReview = {
-    user:req.userID,
-    product:req.params.id,
+    user: req.userID,
+    product: req.params.id,
     content: req.body.content,
-  }
+  };
   try {
-    const result = await Review.create(newReview)
-    if(result){
-      const product = await Product.findByIdAndUpdate(req.params.id,{
-        $push:{reviews:result._id}
-      },
-      { new: true }
+    const result = await Review.create(newReview);
+    if (result) {
+      const product = await Product.findByIdAndUpdate(
+        req.params.id,
+        {
+          $push: { reviews: result._id },
+        },
+        { new: true }
       );
-      res.status(200).json(product)
+      res.status(200).json(product);
     }
   } catch (err) {
     res.status(500).json(err.message);
   }
 };
 
-const modifyReview = async(req,res,next)=>{
+const modifyReview = async (req, res, next) => {
   try {
-    const result = await Review.findByIdAndUpdate(req.params.revID,{
-      $set:req.body,
-    });
-    res.status(200).json('ur review has been updated successfully')
+    const result = await Review.findByIdAndUpdate(
+      req.params.revID,
+      {
+        $set: req.body,
+      },
+      { new: true, runValidators: true }
+    );
+    res.status(200).json("ur review has been updated successfully");
   } catch (err) {
     res.status(500).json(err.message);
   }
 };
 
-const deleteReview = async(req,res,next)=>{
+const deleteReview = async (req, res, next) => {
   try {
     const result = await Review.findByIdAndDelete(req.params.revID);
-    res.status(200).json('ur review has been removed successfully')
+    // and delete review ref from review array in product model
+    if (result) {
+      const new_product = await Product.findByIdAndUpdate(req.params.id, {
+        $pull: { reviews: req.params.revID },
+      });
+      res.status(200).json("ur review has been removed successfully");
+    }
   } catch (err) {
     res.status(500).json(err.message);
   }

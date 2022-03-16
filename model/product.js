@@ -18,6 +18,7 @@ const productSchema = new mongoose.Schema({
     width: { type: Number },
   },
   color: { type: String },
+  type: { type: String },
   publishDate: { type: Date, default: Date.now() },
   purpose: {
     type: String,
