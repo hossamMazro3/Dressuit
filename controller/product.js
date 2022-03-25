@@ -1,6 +1,8 @@
 const Product = require("../model/product");
 const User = require("../model/user");
 const Review = require("../model/review");
+const path = require("path");
+const fs = require("fs");
 
 const getProducts = async (req, res, next) => {
   try {
@@ -34,7 +36,6 @@ const getProduct = async (req, res, next) => {
           select: { userName: 1 },
         },
       });
-
     res.status(200).json(result);
   } catch (err) {
     res.status(500).json(err.message);
@@ -106,6 +107,15 @@ const deleteProduct = async (req, res, next) => {
       await Review.deleteMany({
         _id: { $in: result.reviews },
       });
+      //  delete the product imgs from server
+      process.chdir("./");
+      result.Images.forEach((img) => {
+        fs.unlink(path.join(process.cwd(), img), (err) => {
+          if (err) {
+            throw new Error("ooops some error occure");
+          }
+        });
+      });
     }
     res.status(200).json("Product has been deleted...");
   } catch (err) {
@@ -168,6 +178,55 @@ const deleteReview = async (req, res, next) => {
   }
 };
 
+// mehtods to deal with Favourit product
+
+// add item to favList
+const add_favItems = async (req, res, next) => {
+  try {
+    const result = await User.findByIdAndUpdate(
+      req.userID,
+      {
+        $addToSet: { favItems: req.params.id },
+      },
+      { new: true }
+    );
+    if (result) {
+      res.status(200).json("added to favList");
+    }
+  } catch (err) {
+    res.status(500).json(err.message);
+  }
+};
+
+// display favList
+const get_favItems = async (req, res, next) => {
+  try {
+    const result = await User.findById(req.userID)
+      .select("favItems -_id")
+      .populate("favItems");
+
+    if (result) {
+      res.status(200).json(result);
+    }
+  } catch (err) {
+    res.status(500).json(err.message);
+  }
+};
+
+// delate item from favList
+const delete_favItems = async (req, res, next) => {
+  try {
+    const result = await User.findByIdAndUpdate(req.userID, {
+      $pull: { favItems: req.params.id },
+    });
+    if (result) {
+      res.status(200).json("delete from favList");
+    }
+  } catch (err) {
+    res.status(500).json(err.message);
+  }
+};
+
 module.exports = {
   getProducts,
   getProduct,
@@ -177,4 +236,7 @@ module.exports = {
   addReview,
   modifyReview,
   deleteReview,
+  add_favItems,
+  get_favItems,
+  delete_favItems,
 };

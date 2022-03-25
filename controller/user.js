@@ -4,6 +4,8 @@ require("dotenv").config();
 const User = require("../model/user");
 const Product = require("../model/product");
 const Review = require("../model/review");
+const path = require("path");
+const fs = require("fs");
 
 const maxAge = 15 * 24 * 60 * 60;
 // method for creating a token
@@ -99,7 +101,6 @@ const deleteUser = async (req, res, next) => {
   try {
    const result= await User.findByIdAndDelete(req.params.id);
   //  delete all product asscoiated with this user
-  // console.log(result);
     if(result){
       await Review.deleteMany({
         user:result._id
@@ -107,6 +108,14 @@ const deleteUser = async (req, res, next) => {
       await Product.deleteMany({
         _id:{$in:result.products}
       })
+
+       //  delete the user img from server
+       process.chdir("./");
+        fs.unlink(path.join(process.cwd(),result.image),(err)=>{
+          if(err){
+            throw new Error("ooops some error occure");
+          }
+        });
     }
     res.status(200).json("user has been deleted...");
   } catch (err) {
