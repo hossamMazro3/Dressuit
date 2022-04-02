@@ -17,7 +17,7 @@ const getProducts = async (req, res, next) => {
       });
     res.status(200).json(result);
   } catch (err) {
-    res.status(500).json(err.message);
+    res.status(400).json(err.message);
   }
 };
 
@@ -33,12 +33,12 @@ const getProduct = async (req, res, next) => {
         select: { content: 1 },
         populate: {
           path: "user",
-          select: { userName: 1 },
+          select: { userName: 1, image: 1 },
         },
       });
     res.status(200).json(result);
   } catch (err) {
-    res.status(500).json(err.message);
+    res.status(400).json(err.message);
   }
 };
 
@@ -67,9 +67,9 @@ const addProduct = async (req, res, next) => {
       });
     }
 
-    res.status(200).json(result);
+    res.status(201).json("created successfully...");
   } catch (err) {
-    res.status(500).json(err.message);
+    res.status(400).json(err.message);
   }
 };
 
@@ -90,12 +90,9 @@ const updateProduct = async (req, res, next) => {
       },
       { new: true, runValidators: true }
     );
-    res.status(200).json({
-      msg: "product has successfully updated",
-      updatedProduct,
-    });
+    res.status(200).json("product has successfully updated");
   } catch (err) {
-    res.status(500).json(err.message);
+    res.status(400).json(err.message);
   }
 };
 
@@ -117,9 +114,9 @@ const deleteProduct = async (req, res, next) => {
         });
       });
     }
-    res.status(200).json("Product has been deleted...");
+    res.status(200).json("product has been deleted...");
   } catch (err) {
-    res.status(500).json(err.message);
+    res.status(400).json(err.message);
   }
 };
 
@@ -141,10 +138,10 @@ const addReview = async (req, res, next) => {
         },
         { new: true }
       );
-      res.status(200).json(product);
+      res.status(201).json("created successfully...");
     }
   } catch (err) {
-    res.status(500).json(err.message);
+    res.status(400).json(err.message);
   }
 };
 
@@ -157,9 +154,9 @@ const modifyReview = async (req, res, next) => {
       },
       { new: true, runValidators: true }
     );
-    res.status(200).json("ur review has been updated successfully");
+    res.status(201).json("ur review has been updated successfully");
   } catch (err) {
-    res.status(500).json(err.message);
+    res.status(400).json(err.message);
   }
 };
 
@@ -174,7 +171,7 @@ const deleteReview = async (req, res, next) => {
       res.status(200).json("ur review has been removed successfully");
     }
   } catch (err) {
-    res.status(500).json(err.message);
+    res.status(400).json(err.message);
   }
 };
 
@@ -194,7 +191,7 @@ const add_favItems = async (req, res, next) => {
       res.status(200).json("added to favList");
     }
   } catch (err) {
-    res.status(500).json(err.message);
+    res.status(400).json(err.message);
   }
 };
 
@@ -209,7 +206,7 @@ const get_favItems = async (req, res, next) => {
       res.status(200).json(result);
     }
   } catch (err) {
-    res.status(500).json(err.message);
+    res.status(400).json(err.message);
   }
 };
 
@@ -223,7 +220,7 @@ const delete_favItems = async (req, res, next) => {
       res.status(200).json("delete from favList");
     }
   } catch (err) {
-    res.status(500).json(err.message);
+    res.status(400).json(err.message);
   }
 };
 

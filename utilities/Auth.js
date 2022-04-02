@@ -9,7 +9,7 @@ module.exports.requireAuth = (req, res, next) => {
     if (token) {
         jwt.verify(token, process.env.secret_Key, async (err, decodedToken) => {
             if (err) {
-                res.status(302).json({
+                res.status(401).json({
                     msg:'not authorized to access this page'
                 })
             } else {
@@ -20,7 +20,7 @@ module.exports.requireAuth = (req, res, next) => {
             }
         });
     } else {
-        res.status(302).json({
+        res.status(401).json({
             msg:'not authorized to access this page'
         })
     }

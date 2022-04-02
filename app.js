@@ -9,6 +9,10 @@ const cors = require('cors');
 // setup app to use express functionality
 const app = express();
 
+// setup docs for all apis
+const swaggerUi = require('swagger-ui-express');
+const swaggerDocument = require('./swagger.json');
+
 // db connection
 mongoose.connect(`mongodb://localhost/${process.env.DB_Name}`,(err=>{
     if(err) throw new Error('can not establish a connection to DB');
@@ -38,3 +42,5 @@ app.use(cookieParser());
 // setup routes for user and product
 app.use('/api',userRoute);
 app.use('/api',productRoute);
+// setup routes for api docs
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));

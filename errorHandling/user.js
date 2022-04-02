@@ -4,9 +4,9 @@ const handleErrors = (err) => {
   // console.log(err);
   // envery err.message contains 'users validation failed'
   // validation errors
-  let errors = { email: "", password: "" };
+  let errors = {};
 
-  if (err.message.includes("users validation failed")) {
+  if (err.message.includes("User validation failed")) {
     Object.values(err.errors).forEach(({ properties }) => {
       // console.log(properties);
       // now the property has a message and path

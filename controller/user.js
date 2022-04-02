@@ -21,7 +21,7 @@ const getUsers = async (req, res, next) => {
     const result = await User.find({});
     res.status(200).json(result);
   } catch (err) {
-    res.status(500).json(err.message);
+    res.status(400).json(err.message);
   }
 };
 
@@ -30,10 +30,11 @@ const getUser = async (req, res, next) => {
     const result = await User.findById(req.params.id).populate('products',{
       title:1,
       description:1,
-    });
+      Images:1
+    }).select("-favItems");
     res.status(200).json(result);
   } catch (err) {
-    res.status(500).json(err.message);
+    res.status(400).json(err.message);
   }
 };
 
@@ -55,7 +56,7 @@ const addUser = async (req, res, next) => {
       httpOnly: true,
       maxAge: maxAge * 1000,
     });
-    res.status(200).json({ user: result._id });
+    res.status(201).json({ userID: result._id });
   } catch (err) {
     next(err);
   }
@@ -71,7 +72,7 @@ const login = async (req, res, next) => {
       httpOnly: true,
       maxAge: maxAge * 1000,
     });
-    res.status(200).json({ user: result._id });
+    res.status(200).json({ userID: result._id });
   } catch (err) {
     next(err);
   }
@@ -93,7 +94,7 @@ const updateUser = async (req, res, next) => {
     );
     res.status(200).json("user has been updated...");
   } catch (err) {
-    res.status(500).json(err.message);
+    res.status(400).json(err.message);
   }
 };
 
@@ -119,7 +120,7 @@ const deleteUser = async (req, res, next) => {
     }
     res.status(200).json("user has been deleted...");
   } catch (err) {
-    res.status(500).json(err.message);
+    res.status(400).json(err.message);
   }
 };
 const logout = (req,res,next)=>{
