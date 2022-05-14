@@ -1,4 +1,4 @@
-const {getUsers, getUser, addUser, login, updateUser, deleteUser,logout} = require('../controller/user');
+const {getUsers, getUser, addUser, login, updateUser, deleteUser} = require('../controller/user');
 const {userError} = require('../errorHandling/user');
 const {upload} = require('../utilities/multer');
 const {requireAuth} = require('../utilities/Auth');
@@ -14,9 +14,6 @@ router.post('/user/signup',addUser,userError);
 
 // post method for login
 router.post('/user/login',login,userError)
-
-// logout mrthod for test 
-router.get('/user/logout',requireAuth,logout)
 
 // get the specific user by id
 router.get('/user/:id',requireAuth,getUser);

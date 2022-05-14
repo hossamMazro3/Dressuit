@@ -2,10 +2,9 @@
 const handleErrors = (err) => {
   // console.log(err.message, err.code);
   // console.log(err);
-  // envery err.message contains 'users validation failed'
+  // envery err.message contains 'User validation failed'
   // validation errors
   let errors = {};
-
   if (err.message.includes("User validation failed")) {
     Object.values(err.errors).forEach(({ properties }) => {
       // console.log(properties);
@@ -35,6 +34,9 @@ const handleErrors = (err) => {
   if (err.message === "incorrect password") {
     errors.password = "That password is incorrect";
     return errors;
+  }
+  else{
+    return "Bad request, some thing goes wrong"
   }
 };
 

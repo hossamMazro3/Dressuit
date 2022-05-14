@@ -15,9 +15,7 @@
     "/user/signup": {
       "post": {
         "summary": "Creates a user.",
-        "tags": [
-          "user"
-        ],
+        "tags": ["user"],
         "description": "enter a user data to make account in the system to use it",
         "requestBody": {
           "required": true,
@@ -60,9 +58,6 @@
                 }
               }
             }
-          },
-          "500": {
-            "description": "Internal Server Error"
           }
         }
       }
@@ -70,9 +65,7 @@
     "/user/login": {
       "post": {
         "summary": "login to the system.",
-        "tags": [
-          "user"
-        ],
+        "tags": ["user"],
         "description": "if you have an account on the system please login",
         "requestBody": {
           "required": true,
@@ -82,11 +75,13 @@
                 "type": "object",
                 "properties": {
                   "email": {
-                    "type": "string"
+                    "type": "string",
+                    "example":"hoso@google.com"
                   },
                   "password": {
                     "type": "string",
-                    "format": "password"
+                    "format": "password",
+                    "example":"test333"
                   }
                 }
               }
@@ -124,51 +119,6 @@
                 }
               }
             }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      }
-    },
-    "/user/logout": {
-      "get": {
-        "summary": "to logout from the system.",
-        "tags": [
-          "user"
-        ],
-        "security": [
-          {
-            "Auth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "successfully logout",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "string",
-                  "example": "succssfull logout, bye"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Access token is missing or invalid",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "msg": {
-                      "type": "string",
-                      "example": "not authorized to access this page"
-                    }
-                  }
-                }
-              }
-            }
           }
         }
       }
@@ -176,13 +126,11 @@
     "/user": {
       "get": {
         "summary": "Returns a list of users.",
-        "tags": [
-          "user"
-        ],
+        "tags": ["user"],
         "description": "get all users in the system it is allowed for only admins",
         "security": [
           {
-            "Auth": []
+            "ApiKeyAuth": []
           }
         ],
         "responses": {
@@ -206,11 +154,22 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "msg": {
+                    "errors": {
                       "type": "string",
                       "example": "not authorized to access this page"
                     }
                   }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "example": "Bad request, some thing goes wrong"
                 }
               }
             }
@@ -221,8 +180,11 @@
     "/user/{userId}": {
       "get": {
         "summary": "Returns a user by ID.",
-        "tags": [
-          "user"
+        "tags": ["user"],
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
         ],
         "parameters": [
           {
@@ -272,7 +234,15 @@
             }
           },
           "400": {
-            "description": "The specified user ID is invalid (not a number)."
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "example": "Bad request, some thing goes wrong"
+                }
+              }
+            }
           },
           "401": {
             "description": "Access token is missing or invalid",
@@ -281,7 +251,7 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "msg": {
+                    "errors": {
                       "type": "string",
                       "example": "not authorized to access this page"
                     }
@@ -291,17 +261,25 @@
             }
           },
           "404": {
-            "description": "A user with the specified ID was not found."
-          },
-          "default": {
-            "description": "Unexpected error"
+            "description": "A user with the specified ID was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "example": "no user specified by this id"
+                }
+              }
+            }
           }
         }
       },
       "patch": {
         "summary": "update a user data.",
-        "tags": [
-          "user"
+        "tags": ["user"],
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
         ],
         "parameters": [
           {
@@ -349,11 +327,12 @@
             }
           },
           "400": {
-            "description": "The server cannot or will not process the request due to something that is perceived to be a client error e.g. malformed request syntax",
+            "description": "Bad request",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "string"
+                  "type": "string",
+                  "example": "Bad request, some thing goes wrong"
                 }
               }
             }
@@ -365,11 +344,22 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "msg": {
+                    "errors": {
                       "type": "string",
                       "example": "not authorized to access this page"
                     }
                   }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "A user with the specified ID was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "example": "no user specified by this id"
                 }
               }
             }
@@ -378,8 +368,11 @@
       },
       "delete": {
         "summary": "deleted a user data.",
-        "tags": [
-          "user"
+        "tags": ["user"],
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
         ],
         "parameters": [
           {
@@ -394,7 +387,7 @@
           }
         ],
         "responses": {
-          "204": {
+          "200": {
             "description": "The resource was deleted successfully.",
             "content": {
               "application/json": {
@@ -406,11 +399,12 @@
             }
           },
           "400": {
-            "description": "The server cannot or will not process the request due to something that is perceived to be a client error e.g. malformed request syntax",
+            "description": "Bad request",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "string"
+                  "type": "string",
+                  "example": "Bad request, some thing goes wrong"
                 }
               }
             }
@@ -422,11 +416,22 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "msg": {
+                    "errors": {
                       "type": "string",
                       "example": "not authorized to access this page"
                     }
                   }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "A user with the specified ID was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "example": "no user specified by this id"
                 }
               }
             }
@@ -437,10 +442,13 @@
     "/product": {
       "post": {
         "summary": "Creates a product.",
-        "tags": [
-          "product"
-        ],
+        "tags": ["product"],
         "description": "enter a product data to add it to your account",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -464,12 +472,30 @@
             }
           },
           "400": {
-            "description": "The server cannot or will not process the request due to something that is perceived to be a client error e.g. malformed request syntax",
+            "description": "Bad request",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "string",
-                  "example": "Product validation failed: price: please enter product price"
+                  "type": "object",
+                  "properties": {
+                    "errors": {
+                      "type": "object",
+                      "properties": {
+                        "title": {
+                          "type": "string",
+                          "example": "please enter product name"
+                        },
+                        "price": {
+                          "type": "string",
+                          "example": "please enter product price"
+                        },
+                        "purpose": {
+                          "type": "string",
+                          "example": "sel is not supported"
+                        }
+                      }
+                    }
+                  }
                 }
               }
             }
@@ -481,7 +507,7 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "msg": {
+                    "errors": {
                       "type": "string",
                       "example": "not authorized to access this page"
                     }
@@ -489,21 +515,16 @@
                 }
               }
             }
-          },
-          "500": {
-            "description": "Internal Server Error"
           }
         }
       },
       "get": {
         "summary": "Returns a list of products.",
-        "tags": [
-          "product"
-        ],
+        "tags": ["product"],
         "description": "get all products in the store",
         "security": [
           {
-            "Auth": []
+            "ApiKeyAuth": []
           }
         ],
         "responses": {
@@ -547,11 +568,12 @@
             }
           },
           "400": {
-            "description": "The server cannot or will not process the request due to something that is perceived to be a client error e.g. malformed request syntax",
+            "description": "Bad request",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "string"
+                  "type": "string",
+                  "example": "Bad request, some thing goes wrong"
                 }
               }
             }
@@ -563,7 +585,7 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "msg": {
+                    "errors": {
                       "type": "string",
                       "example": "not authorized to access this page"
                     }
@@ -571,9 +593,6 @@
                 }
               }
             }
-          },
-          "500": {
-            "description": "Internal Server Error"
           }
         }
       }
@@ -581,8 +600,11 @@
     "/product/{productId}": {
       "get": {
         "summary": "Returns a product by ID.",
-        "tags": [
-          "product"
+        "tags": ["product"],
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
         ],
         "parameters": [
           {
@@ -664,7 +686,15 @@
             }
           },
           "400": {
-            "description": "The specified product ID is invalid (not a number)."
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "example": "Bad request, some thing goes wrong"
+                }
+              }
+            }
           },
           "401": {
             "description": "Access token is missing or invalid",
@@ -673,7 +703,7 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "msg": {
+                    "errors": {
                       "type": "string",
                       "example": "not authorized to access this page"
                     }
@@ -683,17 +713,25 @@
             }
           },
           "404": {
-            "description": "A product with the specified ID was not found."
-          },
-          "default": {
-            "description": "Unexpected error"
+            "description": "A product with the specified ID was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "example": "no product specified by this id"
+                }
+              }
+            }
           }
         }
       },
       "patch": {
         "summary": "update a user data.",
-        "tags": [
-          "product"
+        "tags": ["product"],
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
         ],
         "parameters": [
           {
@@ -741,7 +779,15 @@
             }
           },
           "400": {
-            "description": "The specified product ID is invalid (not a number)."
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "example": "Bad request, some thing goes wrong"
+                }
+              }
+            }
           },
           "401": {
             "description": "Access token is missing or invalid",
@@ -750,7 +796,7 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "msg": {
+                    "errors": {
                       "type": "string",
                       "example": "not authorized to access this page"
                     }
@@ -760,17 +806,25 @@
             }
           },
           "404": {
-            "description": "A product with the specified ID was not found."
-          },
-          "default": {
-            "description": "Unexpected error"
+            "description": "A product with the specified ID was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "example": "no product specified by this id"
+                }
+              }
+            }
           }
         }
       },
       "delete": {
         "summary": "deleted a product data.",
-        "tags": [
-          "product"
+        "tags": ["product"],
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
         ],
         "parameters": [
           {
@@ -785,7 +839,7 @@
           }
         ],
         "responses": {
-          "204": {
+          "200": {
             "description": "The resource was deleted successfully.",
             "content": {
               "application/json": {
@@ -797,7 +851,15 @@
             }
           },
           "400": {
-            "description": "The specified product ID is invalid (not a number)."
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "example": "Bad request, some thing goes wrong"
+                }
+              }
+            }
           },
           "401": {
             "description": "Access token is missing or invalid",
@@ -806,7 +868,7 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "msg": {
+                    "errors": {
                       "type": "string",
                       "example": "not authorized to access this page"
                     }
@@ -816,10 +878,15 @@
             }
           },
           "404": {
-            "description": "A product with the specified ID was not found."
-          },
-          "default": {
-            "description": "Unexpected error"
+            "description": "A product with the specified ID was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "example": "no product specified by this id"
+                }
+              }
+            }
           }
         }
       }
@@ -827,8 +894,11 @@
     "/product/{productId}/review": {
       "post": {
         "summary": "Creates a review.",
-        "tags": [
-          "review"
+        "tags": ["review"],
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
         ],
         "parameters": [
           {
@@ -871,7 +941,15 @@
             }
           },
           "400": {
-            "description": "The specified product ID is invalid (not a number)."
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "example": "Bad request, some thing goes wrong"
+                }
+              }
+            }
           },
           "401": {
             "description": "Access token is missing or invalid",
@@ -880,7 +958,7 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "msg": {
+                    "errors": {
                       "type": "string",
                       "example": "not authorized to access this page"
                     }
@@ -888,9 +966,6 @@
                 }
               }
             }
-          },
-          "default": {
-            "description": "Unexpected error"
           }
         }
       }
@@ -898,8 +973,11 @@
     "/product/{productId}/review/{reviewId}": {
       "patch": {
         "summary": "update a user review.",
-        "tags": [
-          "review"
+        "tags": ["review"],
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
         ],
         "parameters": [
           {
@@ -951,7 +1029,15 @@
             }
           },
           "400": {
-            "description": "The specified product ID is invalid (not a number)."
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "example": "Bad request, some thing goes wrong"
+                }
+              }
+            }
           },
           "401": {
             "description": "Access token is missing or invalid",
@@ -960,7 +1046,7 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "msg": {
+                    "errors": {
                       "type": "string",
                       "example": "not authorized to access this page"
                     }
@@ -970,17 +1056,25 @@
             }
           },
           "404": {
-            "description": "A product with the specified ID was not found."
-          },
-          "default": {
-            "description": "Unexpected error"
+            "description": "A review with the specified ID was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "example": "no review specified by this id"
+                }
+              }
+            }
           }
         }
       },
       "delete": {
         "summary": "delete a user review.",
-        "tags": [
-          "review"
+        "tags": ["review"],
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
         ],
         "parameters": [
           {
@@ -1005,7 +1099,7 @@
           }
         ],
         "responses": {
-          "204": {
+          "200": {
             "description": "The resource was deleted successfully.",
             "content": {
               "application/json": {
@@ -1017,7 +1111,15 @@
             }
           },
           "400": {
-            "description": "The specified product ID is invalid (not a number)."
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "example": "Bad request, some thing goes wrong"
+                }
+              }
+            }
           },
           "401": {
             "description": "Access token is missing or invalid",
@@ -1026,7 +1128,7 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "msg": {
+                    "errors": {
                       "type": "string",
                       "example": "not authorized to access this page"
                     }
@@ -1036,10 +1138,15 @@
             }
           },
           "404": {
-            "description": "A product with the specified ID was not found."
-          },
-          "default": {
-            "description": "Unexpected error"
+            "description": "A review with the specified ID was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "example": "no review specified by this id"
+                }
+              }
+            }
           }
         }
       }
@@ -1047,8 +1154,11 @@
     "/favItem": {
       "get": {
         "summary": "Returns fav products .",
-        "tags": [
-          "favItem"
+        "tags": ["favItem"],
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
         ],
         "responses": {
           "200": {
@@ -1065,11 +1175,12 @@
             }
           },
           "400": {
-            "description": "The server cannot or will not process the request due to something that is perceived to be a client error e.g. malformed request syntax",
+            "description": "Bad request",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "string"
+                  "type": "string",
+                  "example": "Bad request, some thing goes wrong"
                 }
               }
             }
@@ -1081,7 +1192,7 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "msg": {
+                    "errors": {
                       "type": "string",
                       "example": "not authorized to access this page"
                     }
@@ -1089,9 +1200,6 @@
                 }
               }
             }
-          },
-          "default": {
-            "description": "Unexpected error"
           }
         }
       }
@@ -1099,8 +1207,11 @@
     "/favItem/{productId}": {
       "post": {
         "summary": "add a product to a favItems.",
-        "tags": [
-          "favItem"
+        "tags": ["favItem"],
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
         ],
         "parameters": [
           {
@@ -1128,7 +1239,15 @@
             }
           },
           "400": {
-            "description": "The specified product ID is invalid (not a number)."
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "example": "Bad request, some thing goes wrong"
+                }
+              }
+            }
           },
           "401": {
             "description": "Access token is missing or invalid",
@@ -1137,7 +1256,7 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "msg": {
+                    "errors": {
                       "type": "string",
                       "example": "not authorized to access this page"
                     }
@@ -1145,16 +1264,16 @@
                 }
               }
             }
-          },
-          "default": {
-            "description": "Unexpected error"
           }
         }
       },
       "delete": {
         "summary": "delete a product from a favItems.",
-        "tags": [
-          "favItem"
+        "tags": ["favItem"],
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
         ],
         "parameters": [
           {
@@ -1169,7 +1288,7 @@
           }
         ],
         "responses": {
-          "204": {
+          "200": {
             "description": "remove the specific product which identifed by id from fav list",
             "content": {
               "application/json": {
@@ -1181,7 +1300,15 @@
             }
           },
           "400": {
-            "description": "The specified product ID is invalid (not a number)."
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "example": "Bad request, some thing goes wrong"
+                }
+              }
+            }
           },
           "401": {
             "description": "Access token is missing or invalid",
@@ -1190,7 +1317,7 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "msg": {
+                    "errors": {
                       "type": "string",
                       "example": "not authorized to access this page"
                     }
@@ -1198,12 +1325,6 @@
                 }
               }
             }
-          },
-          "404": {
-            "description": "A product with the specified ID was not found."
-          },
-          "default": {
-            "description": "Unexpected error"
           }
         }
       }
@@ -1231,10 +1352,7 @@
           },
           "gender": {
             "type": "string",
-            "enum": [
-              "male",
-              "female"
-            ]
+            "enum": ["male", "female"]
           },
           "birthday": {
             "type": "string",
@@ -1253,12 +1371,7 @@
             }
           }
         },
-        "required": [
-          "userName",
-          "fullName",
-          "email",
-          "password"
-        ]
+        "required": ["userName", "fullName", "email", "password"]
       },
       "Product": {
         "type": "object",
@@ -1267,7 +1380,7 @@
             "type": "string"
           },
           "price": {
-            "type": "string"
+            "type": "integer"
           },
           "description": {
             "type": "string",
@@ -1279,12 +1392,7 @@
             "properties": {
               "name": {
                 "type": "string",
-                "enum": [
-                  "medium",
-                  "small",
-                  "large",
-                  "x-large"
-                ]
+                "enum": ["medium", "small", "large", "x-large"]
               },
               "hieght": {
                 "type": "integer"
@@ -1307,10 +1415,7 @@
           },
           "purpose": {
             "type": "string",
-            "enum": [
-              "rent",
-              "sell"
-            ],
+            "enum": ["rent", "sell"],
             "default": "rent"
           },
           "Images": {
@@ -1343,22 +1448,20 @@
             "type": "string"
           }
         },
-        "required":[
-          "content"
-        ]
+        "required": ["content"]
       }
     },
     "securitySchemes": {
-      "Auth": {
-        "type": "http",
-        "scheme": "bearer",
-        "bearerFormat": "JWT"
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "token"
       }
     }
   },
   "security": [
     {
-      "Auth": []
+      "ApiKeyAuth": []
     }
   ]
 }

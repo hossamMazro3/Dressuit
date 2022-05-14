@@ -7,11 +7,11 @@ const Review = require("../model/review");
 const path = require("path");
 const fs = require("fs");
 
-const maxAge = 15 * 24 * 60 * 60;
+
 // method for creating a token
 function createToken(id) {
   return jwt.sign({ id }, process.env.secret_Key, {
-    expiresIn: maxAge,
+    expiresIn: "7d",
   });
 }
 
@@ -19,22 +19,35 @@ function createToken(id) {
 const getUsers = async (req, res, next) => {
   try {
     const result = await User.find({});
+
     res.status(200).json(result);
   } catch (err) {
-    res.status(400).json(err.message);
+    for (let e in err.errors) {
+      console.log(err.errors[e].message);
+    }
+    res.status(400).json("Bad request, some thing goes wrong")
   }
 };
 
 const getUser = async (req, res, next) => {
   try {
-    const result = await User.findById(req.params.id).populate('products',{
-      title:1,
-      description:1,
-      Images:1
-    }).select("-favItems");
+    const result = await User.findById(req.params.id)
+      .populate("products", {
+        title: 1,
+        description: 1,
+        Images: 1,
+      })
+      .select("-favItems");
+
+      if(!result){
+       return res.status(404).json("no user specified by this id");
+      }
     res.status(200).json(result);
   } catch (err) {
-    res.status(400).json(err.message);
+    for (let e in err.errors) {
+      console.log(err.errors[e].message);
+    }
+    res.status(400).json("Bad request, some thing goes wrong")
   }
 };
 
@@ -52,10 +65,7 @@ const addUser = async (req, res, next) => {
   try {
     const result = await User.create(newUser);
     const token = createToken(result._id);
-    res.cookie("jwt", token, {
-      httpOnly: true,
-      maxAge: maxAge * 1000,
-    });
+    res.header("x-auth-token", token);
     res.status(201).json({ userID: result._id });
   } catch (err) {
     next(err);
@@ -68,19 +78,16 @@ const login = async (req, res, next) => {
   try {
     const result = await User.login(email, password);
     const token = createToken(result._id);
-    res.cookie("jwt", token, {
-      httpOnly: true,
-      maxAge: maxAge * 1000,
-    });
-    res.status(200).json({ userID: result._id });
+    res.header("x-auth-token", token)
+    res.status(200).json({ userID: result._id});
   } catch (err) {
     next(err);
   }
 };
 
 const updateUser = async (req, res, next) => {
-    // check of userImage if you want to change defualt image
-    // takes it and added to property image which added to body obj
+  // check of userImage if you want to change defualt image
+  // takes it and added to property image which added to body obj
   if (req.file) {
     req.body.image = req.file.path;
   }
@@ -92,52 +99,57 @@ const updateUser = async (req, res, next) => {
       },
       { new: true, runValidators: true }
     );
+
+    if(!updatedUser){
+     return res.status(404).json("no user specified by this id");
+    }
     res.status(200).json("user has been updated...");
   } catch (err) {
-    res.status(400).json(err.message);
+    for (let e in err.errors) {
+      console.log(err.errors[e].message);
+    }
+    res.status(400).json("Bad request, some thing goes wrong")
   }
 };
 
 const deleteUser = async (req, res, next) => {
   try {
-   const result= await User.findByIdAndDelete(req.params.id);
-  //  delete all product asscoiated with this user
-    if(result){
+    const result = await User.findByIdAndDelete(req.params.id);
+    //  delete all product asscoiated with this user
+    if (result) {
       await Review.deleteMany({
-        user:result._id
+        user: result._id,
       });
       await Product.deleteMany({
-        _id:{$in:result.products}
-      })
+        _id: { $in: result.products },
+      });
 
-       //  delete the user img from server
-       process.chdir("./");
-        fs.unlink(path.join(process.cwd(),result.image),(err)=>{
-          if(err){
-            throw new Error("ooops some error occure");
-          }
-        });
+      //  delete the user img from server
+      process.chdir("./");
+      fs.unlink(path.join(process.cwd(), result.image), (err) => {
+        if (err) {
+          throw new Error("ooops some error occure");
+        }
+      });
+    }
+    if(!result){
+      return res.status(404).json("no product specified by this id");
     }
     res.status(200).json("user has been deleted...");
   } catch (err) {
-    res.status(400).json(err.message);
+    for (let e in err.errors) {
+      console.log(err.errors[e].message);
+    }
+    res.status(400).json("Bad request, some thing goes wrong")
   }
 };
-const logout = (req,res,next)=>{
-  res.cookie("jwt", "", { maxAge: 1 });
-  // res.clearCookie('jwt'); another way
-  res.status(200).json({
-    msg:'succssfull logout, bye'
-  })
-}
 
-module.exports= {
+
+module.exports = {
   getUsers,
   getUser,
   addUser,
   login,
   updateUser,
-  deleteUser,
-  logout
+  deleteUser
 };
-

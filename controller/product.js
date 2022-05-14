@@ -4,7 +4,19 @@ const Review = require("../model/review");
 const path = require("path");
 const fs = require("fs");
 
+function errorHandling(errors) {
+  const errors_Obj = {};
+  for (let e in errors) {
+    errors_Obj[errors[e].path] = errors[e].message;
+  }
+  return errors_Obj;
+}
+
 const getProducts = async (req, res, next) => {
+  // current page
+  const page = req.query.p || 0;
+  // the number of page will be returned
+  const product_per_page = 3;
   try {
     const result = await Product.find()
       .populate("user", {
@@ -14,10 +26,15 @@ const getProducts = async (req, res, next) => {
       .select({
         reviews: 0,
         __v: 0,
-      });
+      })
+      .skip(page * product_per_page)
+      .limit(product_per_page);
     res.status(200).json(result);
   } catch (err) {
-    res.status(400).json(err.message);
+    for (let e in err.errors) {
+      console.log(err.errors[e].message);
+    }
+    res.status(400).json("Bad request, some thing goes wrong");
   }
 };
 
@@ -36,9 +53,15 @@ const getProduct = async (req, res, next) => {
           select: { userName: 1, image: 1 },
         },
       });
+    if (!result) {
+      return res.status(404).json("no product specified by this id");
+    }
     res.status(200).json(result);
   } catch (err) {
-    res.status(400).json(err.message);
+    for (let e in err.errors) {
+      console.log(err.errors[e].message);
+    }
+    res.status(400).json("Bad request, some thing goes wrong");
   }
 };
 
@@ -69,7 +92,8 @@ const addProduct = async (req, res, next) => {
 
     res.status(201).json("created successfully...");
   } catch (err) {
-    res.status(400).json(err.message);
+    const errors = errorHandling(err.errors);
+    res.status(400).json({ errors });
   }
 };
 
@@ -90,9 +114,15 @@ const updateProduct = async (req, res, next) => {
       },
       { new: true, runValidators: true }
     );
+    if (!updatedProduct) {
+      return res.status(404).json("no product specified by this id");
+    }
     res.status(200).json("product has successfully updated");
   } catch (err) {
-    res.status(400).json(err.message);
+    for (let e in err.errors) {
+      console.log(err.errors[e].message);
+    }
+    res.status(400).json("Bad request, some thing goes wrong");
   }
 };
 
@@ -104,7 +134,13 @@ const deleteProduct = async (req, res, next) => {
       await Review.deleteMany({
         _id: { $in: result.reviews },
       });
+      if (!result) {
+        return res.status(404).json("no product specified by this id");
+      }
       //  delete the product imgs from server
+      // path.join(path.dirname(process.mainModule.filename), img);
+      // process.mainModule.filename => return location of the main file (app.js)
+      // and want to complete path so, we call .dirname to get the complete or absolute path
       process.chdir("./");
       result.Images.forEach((img) => {
         fs.unlink(path.join(process.cwd(), img), (err) => {
@@ -116,7 +152,10 @@ const deleteProduct = async (req, res, next) => {
     }
     res.status(200).json("product has been deleted...");
   } catch (err) {
-    res.status(400).json(err.message);
+    for (let e in err.errors) {
+      console.log(err.errors[e].message);
+    }
+    res.status(400).json("Bad request, some thing goes wrong");
   }
 };
 
@@ -141,7 +180,8 @@ const addReview = async (req, res, next) => {
       res.status(201).json("created successfully...");
     }
   } catch (err) {
-    res.status(400).json(err.message);
+    const errors = errorHandling(err.errors);
+    res.status(400).json({ errors });
   }
 };
 
@@ -154,9 +194,15 @@ const modifyReview = async (req, res, next) => {
       },
       { new: true, runValidators: true }
     );
+    if (!result) {
+      return res.status(404).json("no review specified by this id");
+    }
     res.status(201).json("ur review has been updated successfully");
   } catch (err) {
-    res.status(400).json(err.message);
+    for (let e in err.errors) {
+      console.log(err.errors[e].message);
+    }
+    res.status(400).json("Bad request, some thing goes wrong");
   }
 };
 
@@ -168,10 +214,16 @@ const deleteReview = async (req, res, next) => {
       const new_product = await Product.findByIdAndUpdate(req.params.id, {
         $pull: { reviews: req.params.revID },
       });
+      if (!result) {
+        return res.status(404).json("no review specified by this id");
+      }
       res.status(200).json("ur review has been removed successfully");
     }
   } catch (err) {
-    res.status(400).json(err.message);
+    for (let e in err.errors) {
+      console.log(err.errors[e].message);
+    }
+    res.status(400).json("Bad request, some thing goes wrong");
   }
 };
 
@@ -191,7 +243,10 @@ const add_favItems = async (req, res, next) => {
       res.status(200).json("added to favList");
     }
   } catch (err) {
-    res.status(400).json(err.message);
+    for (let e in err.errors) {
+      console.log(err.errors[e].message);
+    }
+    res.status(400).json("Bad request, some thing goes wrong");
   }
 };
 
@@ -206,7 +261,10 @@ const get_favItems = async (req, res, next) => {
       res.status(200).json(result);
     }
   } catch (err) {
-    res.status(400).json(err.message);
+    for (let e in err.errors) {
+      console.log(err.errors[e].message);
+    }
+    res.status(400).json("Bad request, some thing goes wrong");
   }
 };
 
@@ -220,7 +278,10 @@ const delete_favItems = async (req, res, next) => {
       res.status(200).json("delete from favList");
     }
   } catch (err) {
-    res.status(400).json(err.message);
+    for (let e in err.errors) {
+      console.log(err.errors[e].message);
+    }
+    res.status(400).json("Bad request, some thing goes wrong");
   }
 };
 
