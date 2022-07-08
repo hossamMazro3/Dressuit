@@ -25,7 +25,7 @@ const productSchema = new mongoose.Schema({
     enum: { values: ["rent", "sell"], message: ' {VALUE} is not supported ' },
     default: "rent",
   },
-  Images: [{ type: String }],
+  images: [{ type: String }],
   reviews: [
     {
       type: mongoose.Schema.Types.ObjectId,

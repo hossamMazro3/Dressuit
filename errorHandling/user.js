@@ -1,5 +1,9 @@
 // handle errors
 const handleErrors = (err) => {
+
+  for (let e in err.errors) {
+    console.log(err.errors[e]);
+  }
   // console.log(err.message, err.code);
   // console.log(err);
   // envery err.message contains 'User validation failed'
@@ -44,3 +48,8 @@ module.exports.userError = (err, req, res, next) => {
   const errors = handleErrors(err);
   res.status(400).json({ errors });
 };
+
+
+/* for (let e in err.errors) {
+      console.log(err.errors[e]);
+    } */

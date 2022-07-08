@@ -26,7 +26,7 @@ const userSchema = new mongoose.Schema(
     },
     gender: {
       type: String,
-      enum: { values: ["male", "female"], message: '{VALUE} is not supported' }
+      enum: { values: ["male", "female"], message: "{VALUE} is not supported" },
     },
     birthday: { type: Date },
     phoneNumber: [
@@ -43,18 +43,27 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: "uploads\\defualtProfile_Img.png",
     },
-    products:[
+    passwordResetCode: {
+      type: String,
+    },
+    passwordResetExpires: {
+      type: Date,
+    },
+    passwordResetVerified: {
+      type: Boolean,
+    },
+    products: [
       {
-        type:mongoose.Schema.Types.ObjectId,
-        ref:'Product'
-      }
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Product",
+      },
     ],
-    favItems:[
+    favItems: [
       {
-        type:mongoose.Schema.Types.ObjectId,
-        ref:'Product'
-      }
-    ]
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Product",
+      },
+    ],
   },
   { timestamps: true }
 );
@@ -67,7 +76,7 @@ userSchema.pre("save", async function (next) {
 });
 
 // static method to login user
-// schma,statics. => after this create ur owen function
+// schma.statics => after this create ur owen function
 userSchema.statics.login = async function (email, password) {
   const user = await this.findOne({ email });
   if (user) {
@@ -78,6 +87,12 @@ userSchema.statics.login = async function (email, password) {
     throw Error("incorrect password");
   }
   throw Error("incorrect email");
+};
+// compare password
+userSchema.statics.comparePassword = async function (id,candidatePassword) {
+  const user = await this.findById(id);
+  const isMatch = await bcrypt.compare(candidatePassword, user.password);
+  return {isMatch,user};
 };
 
 module.exports = mongoose.model("User", userSchema);

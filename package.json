@@ -4,7 +4,8 @@
   "description": "first version or demo for graduation project",
   "main": "app.js",
   "scripts": {
-    "start": "nodemon app.js",
+    "startDev": "nodemon server.js",
+    "start": "NODE_ENV=production node server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "hossam ahmed mazro3",
@@ -19,7 +20,12 @@
     "mongoose": "^6.2.4",
     "morgan": "^1.10.0",
     "multer": "^1.4.4",
+    "nodemailer": "^6.7.7",
+    "paypal-rest-sdk": "^1.8.1",
     "swagger-ui-express": "^4.3.0",
     "validator": "^13.7.0"
+  },
+  "engines": {
+    "node": "^16.13.0"
   }
 }
