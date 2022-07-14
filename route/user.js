@@ -32,7 +32,7 @@ router.get("/user/:id", requireAuth, getUser);
 // patch method to modify the specific user by id
 router.patch("/user/:id", requireAuth, upload.single("profile"), updateUser);
 
-// update user's password
+// change user's password
 router.post("/user/changePass", requireAuth, updateUserPassword);
 // forget the user's password
 router.post("/user/forgetPassword", forgotPassword);
