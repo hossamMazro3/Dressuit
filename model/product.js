@@ -29,7 +29,7 @@ const productSchema = new mongoose.Schema({
   reviews: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Rview",
+      ref: "Review",
     },
   ],
   user: {
@@ -37,5 +37,7 @@ const productSchema = new mongoose.Schema({
     ref: "User",
   },
 });
+
+
 
 module.exports = mongoose.model("Product", productSchema);

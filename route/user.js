@@ -13,12 +13,12 @@ const {
 const { userError } = require("../errorHandling/user");
 const { upload } = require("../utilities/multer");
 const { requireAuth } = require("../utilities/Auth");
-
+const authorizePermissions = require("../middleware/permission");
 // setup router
 const router = require("express").Router();
 
 // get method to get user docs
-router.get("/user", requireAuth, getUsers);
+router.get("/user", requireAuth, authorizePermissions("admin"), getUsers);
 
 // post method to add a user doc
 router.post("/user/signup", addUser, userError);
@@ -41,6 +41,11 @@ router.post("/user/VerifyRestCode", VerifyRestCode);
 // Reset password
 router.post("/user/resetPassword", resetPassword);
 // delete method to delete the specific user by id
-router.delete("/user/:id", requireAuth, deleteUser);
+router.delete(
+  "/user/:id",
+  requireAuth,
+  authorizePermissions("admin", "user"),
+  deleteUser
+);
 
 module.exports = router;

@@ -1,55 +1,32 @@
+const CustomError = require('./customError');
 // handle errors
-const handleErrors = (err) => {
+const userError = (err,req,res,next) => {
 
   for (let e in err.errors) {
-    console.log(err.errors[e]);
+    // console.log(err.errors[e]);
+    return next(new CustomError(err.errors[e].message,400));
   }
-  // console.log(err.message, err.code);
-  // console.log(err);
-  // envery err.message contains 'User validation failed'
-  // validation errors
-  let errors = {};
-  if (err.message.includes("User validation failed")) {
-    Object.values(err.errors).forEach(({ properties }) => {
-      // console.log(properties);
-      // now the property has a message and path
-      // i want to add the message to email property on errors obj
-      errors[properties.path] = properties.message;
-    });
-    return errors;
-  }
-  // now another error is happen when i signed with existing email
-  // i told mongoose it unique but unique property donnot accept message like require
-  // but it send errCode that =11000 to us so,
+  
   // duplicate email error
   if (err.code === 11000) {
-    errors.email = "that email is already registered";
-    return errors;
+    return next(new CustomError("that email is already registered",400));
   }
 
   // now i throw two errors in login function
   // incorrect email
   if (err.message === "incorrect email") {
-    errors.email = "That email is not registered";
-    return errors;
+    return next(new CustomError("That email is not registered",400));
   }
 
   // incorrect password
   if (err.message === "incorrect password") {
-    errors.password = "That password is incorrect";
-    return errors;
+    return next(new CustomError("That password is incorrect",400));
   }
   else{
-    return "Bad request, some thing goes wrong"
+    return next();
   }
 };
 
-module.exports.userError = (err, req, res, next) => {
-  const errors = handleErrors(err);
-  res.status(400).json({ errors });
+module.exports ={
+  userError
 };
-
-
-/* for (let e in err.errors) {
-      console.log(err.errors[e]);
-    } */

@@ -10,26 +10,43 @@ const crypto = require("crypto");
 const sendEmail = require("../utilities/mail");
 
 // method for creating a token
-function createToken(id) {
-  return jwt.sign({ id }, process.env.secret_Key, {
+function createToken(id,role) {
+  return jwt.sign({ id,role }, process.env.secret_Key, {
     expiresIn: "7d",
   });
 }
 
 // allowed for admines only
 const getUsers = asyncWrapper(async (req, res, next) => {
-  const result = await User.find({});
+  // current page
+  const page = req.query.p || 0;
+  // the number of page will be returned
+  const user_per_page = 10;
+  // search by user name
+  const search = req.query.search || ""
+  const result = await User.find({$or:[{userName:{$regex:search,$options:"i"}},{fullName:{$regex:search,$options:"i"}}]})
+    .populate({
+      path: "products",
+      select: "title description  ",
+    })
+    .select(
+      "-password -__v -favItems -passwordResetCode -passwordResetExpires -passwordResetVerified"
+    )
+    .skip(page * user_per_page)
+    .limit(user_per_page);
+
   res.status(200).json(result);
 });
 
 const getUser = asyncWrapper(async (req, res, next) => {
   const result = await User.findById(req.params.id)
-    .populate("products", {
-      title: 1,
-      description: 1,
-      Images: 1,
+    .populate({
+      path: "products",
+      select: "title description images ",
     })
-    .select("-favItems");
+    .select(
+      "-password -__v -favItems -passwordResetCode -passwordResetExpires -passwordResetVerified"
+    );
 
   if (!result) {
     return next(new CustomError("no user specified by this id", 404));
@@ -50,18 +67,16 @@ const addUser = asyncWrapper(async (req, res, next) => {
   };
 
   const result = await User.create(newUser);
-  const token = createToken(result._id);
-  res.header("x-auth-token", token);
-  res.status(201).json({ userID: result._id });
+  const token = createToken(result._id,result.role);
+  res.status(201).json({ userID: result._id, token });
 });
 
 const login = asyncWrapper(async (req, res, next) => {
   const { email, password } = req.body;
 
   const result = await User.login(email, password);
-  const token = createToken(result._id);
-  res.header("x-auth-token", token);
-  res.status(200).json({ userID: result._id });
+  const token = createToken(result._id,result.role);
+  res.status(200).json({ userID: result._id, token });
 });
 
 const updateUser = asyncWrapper(async (req, res, next) => {
@@ -203,10 +218,8 @@ const resetPassword = asyncWrapper(async (req, res, next) => {
   user.passwordResetVerified = undefined;
 
   await user.save();
-  // 3) if everything is ok, generate token
-  const token = createToken(user._id);
-  res.header("x-auth-token", token);
-  res.status(200).json({ userID: user._id });
+  // 3) if everything is ok, redirect to login with new password;
+  res.status(200).json("success, please login with new password");
 });
 
 module.exports = {

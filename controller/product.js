@@ -9,11 +9,12 @@ const getProducts = asyncWrapper(async (req, res, next) => {
   const page = req.query.p || 0;
   // the number of page will be returned
   const product_per_page = 5;
-
-  const result = await Product.find()
-    .populate("user", {
-      userName: 1,
-      image: 1,
+  // search by product title
+  const search = req.query.search || ""
+  const result = await Product.find({$or:[{title:{$regex:search,$options:"i"}},{description:{$regex:search,$options:"i"}}]})
+    .populate({
+      path: "user",
+      select: "userName image ",
     })
     .select({
       reviews: 0,
@@ -37,7 +38,10 @@ const getProduct = asyncWrapper(async (req, res, next) => {
         path: "user",
         select: { userName: 1, image: 1 },
       },
-    });
+    })
+    .select({
+      __v: 0,
+    })
   if (!result) {
     return next(new CustomError("no product specified by this id", 404));
   }
@@ -49,10 +53,10 @@ const addProduct = asyncWrapper(async (req, res, next) => {
   req.files.forEach((element) => {
     imgArray.push(element.path);
   });
-  let size={}
-  if(typeof(req.body.size)=='string'){
-   size = JSON.parse(req.body.size);
-  }else{
+  let size = {};
+  if (typeof req.body.size == "string") {
+    size = JSON.parse(req.body.size);
+  } else {
     size = req.body.size;
   }
   const newProduct = {
@@ -80,9 +84,9 @@ const updateProduct = asyncWrapper(async (req, res, next) => {
   // check of productImages if you want to change uploaded images
   // takes it and added to property images (array)  which added to body obj
   if (req.files) {
-    req.body.Images = [];
+    req.body.images = [];
     req.files.forEach((element) => {
-      req.body.Images.push(element.path);
+      req.body.images.push(element.path);
     });
   }
   const updatedProduct = await Product.findByIdAndUpdate(

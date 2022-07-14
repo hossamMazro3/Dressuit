@@ -11,15 +11,16 @@ module.exports.requireAuth = (req, res, next) => {
     if (token) {
         jwt.verify(token, process.env.secret_Key, (err, decodedToken) => {
             if (err) {
-               return next(new CustomError('not authorized to access this page',401))
+               throw new CustomError('not authorized to access this page',401);
             } else {
-                let userID = decodedToken.id
                 // send this user to the next middleware
-                req.userID = userID;
+                req.userID = decodedToken.id;
+                req.role = decodedToken.role;
+                
                 next();
             }
         });
     } else {
-        return next(new CustomError('not authorized to access this page',401))
+        throw new CustomError('not authorized to access this page',401);
     }
 };

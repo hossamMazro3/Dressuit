@@ -43,6 +43,11 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: "uploads\\defualtProfile_Img.png",
     },
+    role: {
+      type: String,
+      enum: ['admin', 'user'],
+      default: 'user',
+    },
     passwordResetCode: {
       type: String,
     },
@@ -89,10 +94,10 @@ userSchema.statics.login = async function (email, password) {
   throw Error("incorrect email");
 };
 // compare password
-userSchema.statics.comparePassword = async function (id,candidatePassword) {
+userSchema.statics.comparePassword = async function (id, candidatePassword) {
   const user = await this.findById(id);
   const isMatch = await bcrypt.compare(candidatePassword, user.password);
-  return {isMatch,user};
+  return { isMatch, user };
 };
 
 module.exports = mongoose.model("User", userSchema);

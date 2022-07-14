@@ -13,11 +13,12 @@ const {
 } = require("../controller/product");
 const { requireAuth } = require("../utilities/Auth");
 const { upload } = require("../utilities/multer");
+const authorizePermissions = require("../middleware/permission");
 // setup router
 const router = require("express").Router();
 
 // get method to get product docs
-router.get("/product", requireAuth, getProducts);
+router.get("/product", requireAuth,authorizePermissions("admin","user"), getProducts);
 
 // get the specific product by id
 router.get("/product/:id", requireAuth, getProduct);
@@ -29,7 +30,7 @@ router.post("/product", requireAuth, upload.array("images"), addProduct);
 router.patch("/product/:id",requireAuth,upload.array("images"),updateProduct);
 
 // delete method to delete the specific product by id
-router.delete("/product/:id", requireAuth, deleteProduct);
+router.delete("/product/:id", requireAuth, authorizePermissions("admin","user"),deleteProduct);
 // add a review on specific product
 router.post("/product/:id/review", requireAuth, addReview);
 // modify specific review
