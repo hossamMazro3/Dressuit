@@ -7,8 +7,8 @@ const globalErrorhandling = function (err, req, res, next) {
       stack: err.stack,
     });
   } else {
-    res.status(err.statusCode).json(`${err.message}`);
+    res.status(err.statusCode).json({ msg: err.message });
   }
 };
 
-module.exports = globalErrorhandling ;
+module.exports = globalErrorhandling;

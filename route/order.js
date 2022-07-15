@@ -40,7 +40,7 @@ router.patch("/order/:id/pay", requireAuth, authorizePermissions("admin"),toPaid
 router.patch("/order/:id/deliver", requireAuth,authorizePermissions("admin"), toDelivered);
 
 // paypal payment 
-router.get('/order/:id/payment',createPayment)
+router.get('/order/:id/payment',requireAuth,authorizePermissions("user"),createPayment)
 // paypal payment success 
 router.get('/order/:id/success',successPayment)
 
