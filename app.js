@@ -46,7 +46,7 @@ app.use(helmet());
 app.use(compression());
 
 // access to static uploads folder contents
-app.use("/uploads", express.static("uploads"));
+app.use(express.static("uploads"));
 // parse requests of content-type - application/json
 app.use(express.json({ limit: '20kb' }));
 // parse requests of content-type - application/x-www-form-urlencoded

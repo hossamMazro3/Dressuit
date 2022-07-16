@@ -1,33 +1,30 @@
 const multer = require("multer");
+const CustomeError = require("../errorHandling/customError");
+// init multer options
+const multerOptions = () => {
+  // init storage option
+  const storage = multer.memoryStorage();
+  // init a fileFilter option
+  const fileFilter = function (req, file, cb) {
+    if (file.mimetype.startsWith("image")) {
+      // accept this file
+      cb(null, true);
+    } else {
+      // reject this file
+      cb(new CustomeError("file must be image file", 404), false);
+    }
+  };
+  // init multer upload
+  upload = multer({
+    storage,
+    limits: {
+      // file size must be less than or equal 5MB
+      fileSize: 1024 * 1024 * 5,
+    },
+    fileFilter: fileFilter,
+  });
 
-// init storage option
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "./uploads");
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + file.originalname);
-  },
-});
-// init a fileFilter option
-const fileFilter = function (req, file, cb) {
-  if (
-    file.mimetype === "image/jpeg" ||
-    file.mimetype === "image/png" ||
-    file.mimetype === "image/jpg"
-  ) {
-    // accept this file
-    cb(null, true);
-  } else {
-    cb(new Error("file must be image file"), false);
-  }
+  return upload;
 };
-// init multer upload
-module.exports.upload = multer({
-  storage: storage,
-  limits: {
-    // file size must be less than or equal 5MB
-    fileSize: 1024 * 1024 * 5,
-  },
-  fileFilter: fileFilter,
-});
+exports.uploadSingleImg = (field_name) => multerOptions().single(field_name);
+exports.uploadMultiImgs = (arr_of_fields) => multerOptions().fields(arr_of_fields);

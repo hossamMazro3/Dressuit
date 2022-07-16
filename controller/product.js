@@ -14,12 +14,9 @@ const getProducts = asyncWrapper(async (req, res, next) => {
   const result = await Product.find({$or:[{title:{$regex:search,$options:"i"}},{description:{$regex:search,$options:"i"}}]})
     .populate({
       path: "user",
-      select: "userName image ",
+      select: "userName ",
     })
-    .select({
-      reviews: 0,
-      __v: 0,
-    })
+    .select("title price images ")
     .skip(page * product_per_page)
     .limit(product_per_page);
   res.status(200).json(result);
@@ -49,10 +46,6 @@ const getProduct = asyncWrapper(async (req, res, next) => {
 });
 // add a product
 const addProduct = asyncWrapper(async (req, res, next) => {
-  let imgArray = [];
-  req.files.forEach((element) => {
-    imgArray.push(element.path);
-  });
   let size = {};
   if (typeof req.body.size == "string") {
     size = JSON.parse(req.body.size);
@@ -67,7 +60,7 @@ const addProduct = asyncWrapper(async (req, res, next) => {
     color: req.body.color,
     type: req.body.type,
     purpose: req.body.purpose,
-    images: imgArray,
+    images: req.body.images,
     user: req.userID,
   };
   const result = await Product.create(newProduct);
@@ -81,14 +74,6 @@ const addProduct = asyncWrapper(async (req, res, next) => {
 });
 
 const updateProduct = asyncWrapper(async (req, res, next) => {
-  // check of productImages if you want to change uploaded images
-  // takes it and added to property images (array)  which added to body obj
-  if (req.files) {
-    req.body.images = [];
-    req.files.forEach((element) => {
-      req.body.images.push(element.path);
-    });
-  }
   const updatedProduct = await Product.findByIdAndUpdate(
     req.params.id,
     {
@@ -183,7 +168,14 @@ const add_favItems = asyncWrapper(async (req, res, next) => {
 const get_favItems = asyncWrapper(async (req, res, next) => {
   const result = await User.findById(req.userID)
     .select("favItems -_id")
-    .populate("favItems");
+    .populate({
+      path: "favItems",
+      select: "title price images ",
+      populate: {
+        path: "user",
+        select: "userName",
+      },
+    });
 
   if (result) {
     res.status(200).json(result);

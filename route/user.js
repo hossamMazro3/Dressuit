@@ -11,7 +11,8 @@ const {
   resetPassword,
 } = require("../controller/user");
 const { userError } = require("../errorHandling/user");
-const { upload } = require("../utilities/multer");
+const { uploadSingleImg } = require("../utilities/multer");
+const { resizeImage } = require("../middleware/imgProccessing");
 const { requireAuth } = require("../utilities/Auth");
 const authorizePermissions = require("../middleware/permission");
 // setup router
@@ -30,7 +31,13 @@ router.post("/user/login", login, userError);
 router.get("/user/:id", requireAuth, getUser);
 
 // patch method to modify the specific user by id
-router.patch("/user/:id", requireAuth, upload.single("profile"), updateUser);
+router.patch(
+  "/user/:id",
+  requireAuth,
+  uploadSingleImg("profile"),
+  resizeImage,
+  updateUser
+);
 
 // change user's password
 router.post("/user/changePass", requireAuth, updateUserPassword);

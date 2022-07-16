@@ -80,11 +80,6 @@ const login = asyncWrapper(async (req, res, next) => {
 });
 
 const updateUser = asyncWrapper(async (req, res, next) => {
-  // check of userImage if you want to change defualt image
-  // takes it and added to property image which added to body obj
-  if (req.file) {
-    req.body.image = req.file.path;
-  }
   const updatedUser = await User.findByIdAndUpdate(
     req.params.id,
     {
@@ -156,7 +151,7 @@ const forgotPassword = async (req, res, next) => {
   await user.save();
 
   // 3) Send the reset code via email
-  const message = `Hi ${user.name},\n We received a request to reset the password on your Dressuit Account. \n ${resetCode} \n Enter this code to complete the reset. \n Thanks for helping us keep your account secure.\n The Dressuit Team`;
+  const message = `Hi ${user.userName},\n We received a request to reset the password on your Dressuit Account. \n ${resetCode} \n Enter this code to complete the reset. \n Thanks for helping us keep your account secure.\n The Dressuit Team`;
   try {
     await sendEmail({
       email: user.email,
