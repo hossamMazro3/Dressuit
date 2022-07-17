@@ -16,7 +16,7 @@ const getProducts = asyncWrapper(async (req, res, next) => {
       path: "user",
       select: "userName ",
     })
-    .select("title price images ")
+    .select("title price images size ")
     .skip(page * product_per_page)
     .limit(product_per_page);
   res.status(200).json(result);
@@ -170,7 +170,7 @@ const get_favItems = asyncWrapper(async (req, res, next) => {
     .select("favItems -_id")
     .populate({
       path: "favItems",
-      select: "title price images ",
+      select: "title price images size ",
       populate: {
         path: "user",
         select: "userName",

@@ -36,7 +36,7 @@ mongoose.Promise = global.Promise;
 
 // Enable other domains to access your application
 app.use(cors());
-app.options('*', cors());
+
 
 app.set("trust proxy", true);
 
