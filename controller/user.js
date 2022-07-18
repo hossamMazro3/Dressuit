@@ -91,7 +91,9 @@ const updateUser = asyncWrapper(async (req, res, next) => {
   if (!updatedUser) {
     return next(new CustomError("no user specified by this id", 404));
   }
-  res.status(200).json("user has been updated...");
+  res.status(200).json({
+    msg:"user has been updated...",
+  });
 });
 // update user's password
 const updateUserPassword = asyncWrapper(async (req, res) => {
@@ -106,7 +108,9 @@ const updateUserPassword = asyncWrapper(async (req, res) => {
   user.password = newPassword;
 
   await user.save();
-  res.status(200).json("Success! Password Updated.");
+  res.status(200).json({
+    msg: "password has been updated...",
+  });
 });
 
 const deleteUser = asyncWrapper(async (req, res, next) => {
@@ -123,7 +127,9 @@ const deleteUser = asyncWrapper(async (req, res, next) => {
   if (!result) {
     return next(new CustomError("no user specified by this id", 404));
   }
-  res.status(200).json("user has been deleted...");
+  res.status(200).json({
+    msg: "user has been deleted...",
+  });
 });
 
 // forget the user's password
@@ -167,7 +173,9 @@ const forgotPassword = async (req, res, next) => {
     console.log(err);
     return next(new CustomError("There is an error in sending email", 500));
   }
-  res.status(200).json("Reset code sent to email");
+  res.status(200).json({
+    msg: "email has been sent...",
+  });
 };
 
 let email = "";
@@ -191,7 +199,9 @@ const VerifyRestCode = asyncWrapper(async (req, res, next) => {
   user.passwordResetVerified = true;
   await user.save();
   email = user.email;
-  res.status(200).json("Success");
+  res.status(200).json({
+    msg: "reset code has been verified...",
+  });
 });
 
 // Reset password
@@ -214,7 +224,9 @@ const resetPassword = asyncWrapper(async (req, res, next) => {
 
   await user.save();
   // 3) if everything is ok, redirect to login with new password;
-  res.status(200).json("success, please login with new password");
+  res.status(200).json({
+    msg: "password has been reset...",
+  });
 });
 
 module.exports = {

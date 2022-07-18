@@ -28,7 +28,9 @@ const createOrder = asyncWrapper(async (req, res, next) => {
       )
     );
   }
-  res.status(200).json("order created successfully");
+  res.status(200).json({
+    msg: "order created successfully",
+  });
 });
 
 // get the order
@@ -74,7 +76,9 @@ const changeOrder = asyncWrapper(async (req, res, next) => {
       )
     );
   }
-  res.status(200).json("order updated successfully");
+  res.status(200).json({
+    msg: "order has been updated...",
+  });
 });
 
 // delete the order
@@ -83,7 +87,9 @@ const deleteOrder = asyncWrapper(async (req, res, next) => {
   if (!orders) {
     return next(new CustomError("no orders", 404));
   }
-  res.status(200).json(orders);
+  res.status(200).json({
+    msg: "order has been deleted...",
+  });
 });
 
 // Update order paid status
@@ -104,7 +110,9 @@ const toPaid = asyncWrapper(async (req, res, next) => {
 
   const updatedOrder = await order.save();
 
-  res.status(200).json("successfully updated order to be paid");
+  res.status(200).json({
+    msg: "successfully updated order to be paid",
+  });
 });
 
 //  Update order delivered status
@@ -125,7 +133,9 @@ const toDelivered = asyncWrapper(async (req, res, next) => {
 
   const updatedOrder = await order.save();
 
-  res.status(200).json("successfully updated order to be delivered");
+  res.status(200).json({
+    msg: "successfully updated order to be delivered",
+  });
 });
 
 module.exports = {

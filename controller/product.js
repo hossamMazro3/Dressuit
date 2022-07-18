@@ -70,7 +70,9 @@ const addProduct = asyncWrapper(async (req, res, next) => {
       $push: { products: result._id },
     });
   }
-  res.status(201).json("created successfully...");
+  res.status(201).json({
+    msg: "product added successfully",
+  });
 });
 
 const updateProduct = asyncWrapper(async (req, res, next) => {
@@ -84,7 +86,9 @@ const updateProduct = asyncWrapper(async (req, res, next) => {
   if (!updatedProduct) {
     return next(new CustomError("no product specified by this id", 404));
   }
-  res.status(200).json("product has successfully updated");
+  res.status(200).json({
+    msg: "product has been updated...",
+  });
 });
 
 const deleteProduct = asyncWrapper(async (req, res, next) => {
@@ -97,7 +101,9 @@ const deleteProduct = asyncWrapper(async (req, res, next) => {
   } else {
     return next(new CustomError("no product specified by this id", 404));
   }
-  res.status(200).json("product has been deleted...");
+  res.status(200).json({
+    msg: "product has been deleted...",
+  });
 });
 
 //methods to deal with Review
@@ -117,7 +123,9 @@ const addReview = asyncWrapper(async (req, res, next) => {
       },
       { new: true }
     );
-    res.status(201).json("created successfully...");
+    res.status(201).json({
+      msg: "review added successfully",
+    });
   }
 });
 
@@ -132,7 +140,9 @@ const modifyReview = asyncWrapper(async (req, res, next) => {
   if (!result) {
     return next(new CustomError("no review specified by this id", 404));
   }
-  res.status(201).json("ur review has been updated successfully");
+  res.status(201).json({
+    msg: "review has been updated...",
+  });
 });
 
 const deleteReview = asyncWrapper(async (req, res, next) => {
@@ -145,7 +155,9 @@ const deleteReview = asyncWrapper(async (req, res, next) => {
   } else {
     return next(new CustomError("no review specified by this id", 404));
   }
-  res.status(200).json("ur review has been removed successfully");
+  res.status(200).json({
+    msg: "review has been deleted...",
+  });
 });
 
 // mehtods to deal with Favourit product
@@ -160,7 +172,9 @@ const add_favItems = asyncWrapper(async (req, res, next) => {
     { new: true }
   );
   if (result) {
-    res.status(200).json("added to favList");
+    res.status(200).json({
+      msg: "item added to favList successfully",
+    });
   }
 });
 
@@ -188,7 +202,9 @@ const delete_favItems = asyncWrapper(async (req, res, next) => {
     $pull: { favItems: req.params.id },
   });
   if (result) {
-    res.status(200).json("delete from favList");
+    res.status(200).json({
+      msg: "item deleted from favList successfully",
+    });
   }
 });
 

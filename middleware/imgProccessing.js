@@ -22,14 +22,14 @@ module.exports.resizeImage = asyncWrapper(async (req, res, next) => {
 
 module.exports.resizeImages = asyncWrapper(async (req, res, next) => {
   //2- Image processing for images
-  if (req.files.images) {
+  if (req.files) {
     req.body.images = [];
     await Promise.all(
       req.files.images.map(async (img, index) => {
         const imageName = `product-${uuidv4()}-${Date.now()}-${index + 1}.jpeg`;
 
         await sharp(img.buffer)
-          .resize(1080, 1080)
+          .resize(2000, 2000)
           .toFormat("jpeg")
           .jpeg({ quality: 95 })
           .toFile(`uploads/${imageName}`);

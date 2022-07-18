@@ -102,7 +102,9 @@ const successPayment = async(req, res,next) => {
         return next(new CustomError(error.response.message,error.response.httpStatusCode))
       } else {
         // console.log(JSON.stringify(payment));
-        res.status(200).json("success")
+        res.status(200).json({
+          msg: "Payment Successful",
+        })
       }
     }
   );
