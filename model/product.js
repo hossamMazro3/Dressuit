@@ -12,7 +12,7 @@ const productSchema = new mongoose.Schema({
   size: {
     name: {
       type: String,
-      enum: { values: ["medium", "small", "large", "x-large"], message: ' {VALUE} is not supported ' },
+      enum: { values: ["medium", "small", "large", "x-large","xx-large"], message: ' {VALUE} is not supported ' },
     },
     hieght: { type: Number },
     width: { type: Number },
@@ -22,7 +22,7 @@ const productSchema = new mongoose.Schema({
   publishDate: { type: Date, default: Date.now() },
   purpose: {
     type: String,
-    enum: { values: ["rent", "sell"], message: ' {VALUE} is not supported ' },
+    enum: { values: ["rent", "sale"], message: ' {VALUE} is not supported ' },
     default: "rent",
   },
   images: [{ type: String }],

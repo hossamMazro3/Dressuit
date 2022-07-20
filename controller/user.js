@@ -25,12 +25,8 @@ const getUsers = asyncWrapper(async (req, res, next) => {
   // search by user name
   const search = req.query.search || ""
   const result = await User.find({$or:[{userName:{$regex:search,$options:"i"}},{fullName:{$regex:search,$options:"i"}}]})
-    .populate({
-      path: "products",
-      select: "title description  ",
-    })
     .select(
-      "-password -__v -favItems -passwordResetCode -passwordResetExpires -passwordResetVerified"
+      "userName email role createdAt updatedAt"
     )
     .skip(page * user_per_page)
     .limit(user_per_page);
@@ -45,7 +41,7 @@ const getUser = asyncWrapper(async (req, res, next) => {
       select: "title description images ",
     })
     .select(
-      "-password -__v -favItems -passwordResetCode -passwordResetExpires -passwordResetVerified"
+      "-password -__v -favItems -passwordResetCode -passwordResetExpires -passwordResetVerified -createdAt -updatedAt"
     );
 
   if (!result) {

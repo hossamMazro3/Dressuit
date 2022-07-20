@@ -7,8 +7,8 @@ const CustomError = require("../errorHandling/customError");
 // create the order
 const createOrder = asyncWrapper(async (req, res, next) => {
   // app settings
-  const taxPrice = 0;
-  const shippingPrice = 0;
+  const taxPrice =30;
+  const shippingPrice = 20;
   const product = await Product.findById(req.query.product);
   const totalPrice = product.price + taxPrice + shippingPrice;
   const newOrder = {
@@ -33,9 +33,9 @@ const createOrder = asyncWrapper(async (req, res, next) => {
   });
 });
 
-// get the order
+// get  order by id
 const getOrder = asyncWrapper(async (req, res, next) => {
-  const order = await Order.findById(req.params.id);
+  const order = await Order.findById(req.params.id).select("shippingAddress totalPrice payment isDelivered isPaid product -user ");
   if (!order) {
     return next(new CustomError("not found the order by this id", 404));
   }
@@ -43,16 +43,20 @@ const getOrder = asyncWrapper(async (req, res, next) => {
 });
 //  get all orders
 const getAllOrders = asyncWrapper(async (req, res) => {
-  const orders = await Order.find();
+  const orders = await Order.find().select(
+    "totalPrice  isDelivered isPaid createdAt updatedAt -product -user" // -product -user to exclude the product and user from the response 
+  );
   if (!orders) {
     return next(new CustomError("not found any order", 404));
   }
-  res.status(200).json({ orders, count: orders.length });
+  res.status(200).json({ orders });
 });
 
 // get all user orders
 const currentUserOrders = asyncWrapper(async (req, res, next) => {
-  const orders = await Order.find({ user: req.userID })
+  const orders = await Order.find({ user: req.userID }).select(
+    "totalPrice product"
+  );
   if (!orders) {
     return next(new CustomError("no orders", 404));
   }

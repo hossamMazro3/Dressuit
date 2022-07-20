@@ -7,8 +7,12 @@
   },
   "servers": [
     {
-      "url": "http://localhost:3000/api",
+      "url": "http://localhost:5000/api",
       "description": "Main (development) server"
+    },
+    {
+      "url": "https://dressuit.herokuapp.com/api",
+      "description": "deployment server"
     }
   ],
   "paths": {
@@ -16,7 +20,7 @@
       "post": {
         "summary": "Creates a user.",
         "tags": ["user"],
-        "description": "enter a user data to make account in the system to use it",
+        "description": "Creates a user.",
         "requestBody": {
           "required": true,
           "content": {
@@ -37,7 +41,14 @@
                   "properties": {
                     "userID": {
                       "type": "string",
-                      "example": "6231bxxxxxxxxx"
+                      "description": "The user's ID",
+                      "example": "5e8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f",
+                      "readOnly": true
+                    },
+                    "token": {
+                      "type": "string",
+                      "description": "The user's token",
+                      "readOnly": true
                     }
                   }
                 }
@@ -45,19 +56,10 @@
             }
           },
           "400": {
-            "description": "The server cannot or will not process the request due to something that is perceived to be a client error e.g. malformed request syntax",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "errors": {
-                      "type": "object"
-                    }
-                  }
-                }
-              }
-            }
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
           }
         }
       }
@@ -76,12 +78,21 @@
                 "properties": {
                   "email": {
                     "type": "string",
-                    "example":"hoso@google.com"
+                    "description": "The user's email",
+                    "example": "email@example.com",
+                    "format": "email",
+                    "minLength": 1,
+                    "maxLength": 255,
+                    "pattern": "^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\\.[a-zA-Z0-9-]+)*$"
                   },
                   "password": {
                     "type": "string",
                     "format": "password",
-                    "example":"test333"
+                    "description": "The user's password",
+                    "example": "password",
+                    "minLength": 8,
+                    "maxLength": 255,
+                    "pattern": "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$"
                   }
                 }
               }
@@ -90,7 +101,7 @@
         },
         "responses": {
           "200": {
-            "description": "logged",
+            "description": "OK",
             "content": {
               "application/json": {
                 "schema": {
@@ -98,7 +109,14 @@
                   "properties": {
                     "userID": {
                       "type": "string",
-                      "example": "6231bxxxxxxxxx"
+                      "description": "The user's ID",
+                      "example": "5e8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f",
+                      "readOnly": true
+                    },
+                    "token": {
+                      "type": "string",
+                      "description": "The user's token",
+                      "readOnly": true
                     }
                   }
                 }
@@ -106,19 +124,10 @@
             }
           },
           "400": {
-            "description": "The server cannot or will not process the request due to something that is perceived to be a client error e.g. malformed request syntax",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "errors": {
-                      "type": "object"
-                    }
-                  }
-                }
-              }
-            }
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
           }
         }
       }
@@ -133,30 +142,69 @@
             "ApiKeyAuth": []
           }
         ],
+        "parameters": [
+          {
+            "name": "p",
+            "in": "query",
+            "description": "The page number",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "description": "The search query string to search for users",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
-            "description": "A JSON array of user data",
+            "description": "OK",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/User"
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Access token is missing or invalid",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "errors": {
-                      "type": "string",
-                      "example": "not authorized to access this page"
+                    "type": "object",
+                    "properties": {
+                      "_id": {
+                        "type": "string",
+                        "description": "The user's ID",
+                        "example": "5e8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f",
+                        "readOnly": true
+                      },
+                      "userName": {
+                        "type": "string",
+                        "description": "The user's name",
+                        "example": "John Doe"
+                      },
+                      "email": {
+                        "type": "string",
+                        "description": "The user's email",
+                        "example": "email@example.com",
+                        "format": "email"
+                      },
+                      "role": {
+                        "type": "string",
+                        "description": "The user's role",
+                        "example": "admin"
+                      },
+                      "createdAt": {
+                        "type": "string",
+                        "description": "The user's createdAt",
+                        "example": "2020-01-01T00:00:00.000Z"
+                      },
+                      "updatedAt": {
+                        "type": "string",
+                        "description": "The user's updatedAt",
+                        "example": "2020-01-01T00:00:00.000Z"
+                      }
                     }
                   }
                 }
@@ -164,22 +212,20 @@
             }
           },
           "400": {
-            "description": "Bad request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "string",
-                  "example": "Bad request, some thing goes wrong"
-                }
-              }
-            }
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
           }
         }
       }
     },
     "/user/{userId}": {
       "get": {
-        "summary": "Returns a user by ID.",
+        "summary": " Returns a user by ID.",
         "tags": ["user"],
         "security": [
           {
@@ -191,39 +237,61 @@
             "name": "userId",
             "in": "path",
             "required": true,
-            "description": "get a user data by id.",
+            "description": "The user's ID",
             "schema": {
               "type": "string",
-              "format": "byte"
+              "format": "uuid",
+              "example": "5e8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f"
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "A user object.",
+            "description": "OK",
             "content": {
               "application/json": {
                 "schema": {
                   "allOf": [
+                    { "$ref": "#/components/schemas/User" },
                     {
-                      "$ref": "#/components/schemas/User"
-                    },
-                    {
-                      "type": "object",
                       "properties": {
-                        "_id": {
-                          "type": "string",
-                          "format": "byte",
-                          "example": "4444bff007cb0e73f22efb66"
-                        },
                         "image": {
                           "type": "string",
-                          "format": "binary"
+                          "description": "The user's image",
+                          "example": "image.png"
                         },
                         "products": {
                           "type": "array",
+                          "description": "The user's products",
                           "items": {
-                            "$ref": "#/components/schemas/Product"
+                            "type": "object",
+                            "properties": {
+                              "_id": {
+                                "type": "string",
+                                "description": "The product's ID",
+                                "example": "5e8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f",
+                                "readOnly": true
+                              },
+                              "title": {
+                                "type": "string",
+                                "description": "The product's title",
+                                "example": "Product 1"
+                              },
+                              "price": {
+                                "type": "number",
+                                "description": "The product's price",
+                                "example": 1.99
+                              },
+                              "images": {
+                                "type": "array",
+                                "description": "The product's images",
+                                "items": {
+                                  "type": "string",
+                                  "description": "The product's image",
+                                  "example": "image.png"
+                                }
+                              }
+                            }
                           }
                         }
                       }
@@ -234,47 +302,21 @@
             }
           },
           "400": {
-            "description": "Bad request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "string",
-                  "example": "Bad request, some thing goes wrong"
-                }
-              }
-            }
+            "$ref": "#/components/responses/BadRequest"
           },
           "401": {
-            "description": "Access token is missing or invalid",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "errors": {
-                      "type": "string",
-                      "example": "not authorized to access this page"
-                    }
-                  }
-                }
-              }
-            }
+            "$ref": "#/components/responses/Unauthorized"
           },
           "404": {
-            "description": "A user with the specified ID was not found.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "string",
-                  "example": "no user specified by this id"
-                }
-              }
-            }
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
           }
         }
       },
       "patch": {
-        "summary": "update a user data.",
+        "summary": " Updates a user by ID.",
         "tags": ["user"],
         "security": [
           {
@@ -286,10 +328,11 @@
             "name": "userId",
             "in": "path",
             "required": true,
-            "description": "update a user data by id.",
+            "description": "The user's ID",
             "schema": {
               "type": "string",
-              "format": "byte"
+              "format": "uuid",
+              "example": "5e8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f"
             }
           }
         ],
@@ -302,72 +345,49 @@
                 "properties": {
                   "profile": {
                     "type": "string",
-                    "format": "binary"
+                    "format": "binary",
+                    "description": "The user's profile",
+                    "example": "profile.png"
                   }
-                },
-                "allOf": [
-                  {
-                    "$ref": "#/components/schemas/User"
-                  }
-                ]
+                }
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "updated",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "string",
-                  "example": "user has been updated..."
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "string",
-                  "example": "Bad request, some thing goes wrong"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Access token is missing or invalid",
+            "description": "OK",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "errors": {
+                    "msg": {
                       "type": "string",
-                      "example": "not authorized to access this page"
+                      "description": "The message",
+                      "example": "User updated"
                     }
                   }
                 }
               }
             }
           },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
           "404": {
-            "description": "A user with the specified ID was not found.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "string",
-                  "example": "no user specified by this id"
-                }
-              }
-            }
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
           }
         }
       },
       "delete": {
-        "summary": "deleted a user data.",
+        "summary": " Deletes a user by ID.",
         "tags": ["user"],
         "security": [
           {
@@ -379,71 +399,258 @@
             "name": "userId",
             "in": "path",
             "required": true,
-            "description": "delete a user data by id.",
+            "description": "The user's ID",
             "schema": {
               "type": "string",
-              "format": "byte"
+              "format": "uuid",
+              "example": "5e8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f"
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "The resource was deleted successfully.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "string",
-                  "example": "user has been deleted..."
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "string",
-                  "example": "Bad request, some thing goes wrong"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Access token is missing or invalid",
+            "description": "OK",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "errors": {
+                    "msg": {
                       "type": "string",
-                      "example": "not authorized to access this page"
+                      "description": "The message",
+                      "example": "User deleted"
                     }
                   }
                 }
               }
             }
           },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
           "404": {
-            "description": "A user with the specified ID was not found.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "string",
-                  "example": "no user specified by this id"
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/user/changePass": {
+      "post": {
+        "summary": " Changes a user's password.",
+        "tags": ["user"],
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "oldPassword": {
+                    "type": "string",
+                    "description": "The user's old password",
+                    "example": "oldPassword"
+                  },
+                  "newPassword": {
+                    "type": "string",
+                    "description": "The user's new password",
+                    "example": "newPassword"
+                  }
                 }
               }
             }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "msg": {
+                      "type": "string",
+                      "description": "The message",
+                      "example": "Password changed"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/user/forgetPassword": {
+      "post": {
+        "summary": " Sends a password reset code to the user's email.",
+        "tags": ["user"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "description": "The user's email",
+                    "example": "email@example.com",
+                    "format": "email"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "msg": {
+                      "type": "string",
+                      "description": "The message",
+                      "example": "Password reset code sent"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/user/VerifyRestCode": {
+      "post": {
+        "summary": " Verifies a password reset code.",
+        "tags": ["user"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "resetCode": {
+                    "type": "string",
+                    "description": "The user's reset code",
+                    "example": "resetCode"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "msg": {
+                      "type": "string",
+                      "description": "The message",
+                      "example": "Password reset code verified"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/user/resetPassword": {
+      "post": {
+        "summary": " Resets a user's password.",
+        "tags": ["user"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "newPassword": {
+                    "type": "string",
+                    "description": "The user's new password",
+                    "example": "newPassword"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "msg": {
+                      "type": "string",
+                      "description": "The message",
+                      "example": "Password reset"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
           }
         }
       }
     },
     "/product": {
       "post": {
-        "summary": "Creates a product.",
+        "summary": " Creates a product.",
         "tags": ["product"],
-        "description": "enter a product data to add it to your account",
+        "description": "Creates a product.",
         "security": [
           {
             "ApiKeyAuth": []
@@ -465,142 +672,155 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "string",
-                  "example": "created successfully..."
+                  "type": "object",
+                  "properties": {
+                    "msg": {
+                      "type": "string",
+                      "description": "The message",
+                      "example": "Product created"
+                    }
+                  }
                 }
               }
             }
           },
           "400": {
-            "description": "Bad request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "errors": {
-                      "type": "object",
-                      "properties": {
-                        "title": {
-                          "type": "string",
-                          "example": "please enter product name"
-                        },
-                        "price": {
-                          "type": "string",
-                          "example": "please enter product price"
-                        },
-                        "purpose": {
-                          "type": "string",
-                          "example": "sel is not supported"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
+            "$ref": "#/components/responses/BadRequest"
           },
           "401": {
-            "description": "Access token is missing or invalid",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "errors": {
-                      "type": "string",
-                      "example": "not authorized to access this page"
-                    }
-                  }
-                }
-              }
-            }
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
           }
         }
       },
       "get": {
-        "summary": "Returns a list of products.",
+        "summary": " Gets all products.",
         "tags": ["product"],
-        "description": "get all products in the store",
+        "description": "Gets all products.",
         "security": [
           {
             "ApiKeyAuth": []
           }
         ],
+        "parameters": [
+          {
+            "name": "p",
+            "in": "query",
+            "description": "The page number",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "description": "The search query string to search for products",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
-            "description": "A JSON array of products data",
+            "description": "OK",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "array",
                   "items": {
-                    "allOf": [
-                      {
-                        "$ref": "#/components/schemas/Product"
+                    "type": "object",
+                    "properties": {
+                      "_id": {
+                        "type": "string",
+                        "description": "The product's id",
+                        "example": "5e9f8f8f8f8f8f8f8f8f8f8"
                       },
-                      {
+                      "title": {
+                        "type": "string",
+                        "description": "The product title",
+                        "example": "Product title"
+                      },
+                      "price": {
+                        "type": "number",
+                        "description": "The product price",
+                        "example": "Product price"
+                      },
+                      "size": {
                         "type": "object",
                         "properties": {
-                          "user": {
-                            "type": "object",
-                            "properties": {
-                              "_id": {
-                                "type": "string",
-                                "format": "byte",
-                                "example": "4444bff007cb0e73f22efb66"
-                              },
-                              "userName": {
-                                "type": "string"
-                              },
-                              "image": {
-                                "type": "string",
-                                "format": "binary"
-                              }
-                            }
+                          "height": {
+                            "type": "number",
+                            "description": "The product height",
+                            "example": "Product height"
+                          },
+                          "width": {
+                            "type": "number",
+                            "description": "The product width",
+                            "example": "Product width"
+                          },
+                          "name": {
+                            "type": "string",
+                            "description": "The size name",
+                            "example": "small"
+                          }
+                        }
+                      },
+                      "images": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "description": "The product image",
+                          "example": "image1.jpg"
+                        }
+                      },
+                      "user": {
+                        "type": "object",
+                        "properties": {
+                          "_id": {
+                            "type": "string",
+                            "description": "The user's id",
+                            "example": "5e9f8f8f8f8f8f8f8f8f8f8"
+                          },
+                          "userName": {
+                            "type": "string",
+                            "description": "The user's name",
+                            "example": "John Doe"
+                          },
+                          "image": {
+                            "type": "string",
+                            "description": "The user's image",
+                            "example": "profile.png"
                           }
                         }
                       }
-                    ]
+                    }
                   }
                 }
               }
             }
           },
           "400": {
-            "description": "Bad request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "string",
-                  "example": "Bad request, some thing goes wrong"
-                }
-              }
-            }
+            "$ref": "#/components/responses/BadRequest"
           },
           "401": {
-            "description": "Access token is missing or invalid",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "errors": {
-                      "type": "string",
-                      "example": "not authorized to access this page"
-                    }
-                  }
-                }
-              }
-            }
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
           }
         }
       }
     },
     "/product/{productId}": {
       "get": {
-        "summary": "Returns a product by ID.",
+        "summary": " Gets a product by ID.",
         "tags": ["product"],
+        "description": "Gets a product by ID.",
         "security": [
           {
             "ApiKeyAuth": []
@@ -611,17 +831,17 @@
             "name": "productId",
             "in": "path",
             "required": true,
-            "description": "get a product data by id.",
+            "description": "The product's ID",
             "schema": {
               "type": "string",
-              "format": "byte",
-              "example": "6231c02957cb0e73f58efb83"
+              "format": "uuid",
+              "example": "5e8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f"
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "A product object.",
+            "description": "OK",
             "content": {
               "application/json": {
                 "schema": {
@@ -637,15 +857,18 @@
                           "properties": {
                             "_id": {
                               "type": "string",
-                              "format": "byte",
-                              "example": "4444bff007cb0e73f22efb66"
+                              "description": "The user's id",
+                              "example": "5e9f8f8f8f8f8f8f8f8f8f8"
                             },
                             "userName": {
-                              "type": "string"
+                              "type": "string",
+                              "description": "The user's name",
+                              "example": "John Doe"
                             },
                             "image": {
                               "type": "string",
-                              "format": "binary"
+                              "description": "The user's image",
+                              "example": "profile.png"
                             }
                           }
                         },
@@ -662,15 +885,18 @@
                                   "properties": {
                                     "_id": {
                                       "type": "string",
-                                      "format": "byte",
-                                      "example": "4444bff007cb0e73f22efb66"
+                                      "description": "The user's id",
+                                      "example": "5e9f8f8f8f8f8f8f8f8f8f8"
                                     },
                                     "userName": {
-                                      "type": "string"
+                                      "type": "string",
+                                      "description": "The user's name",
+                                      "example": "John Doe"
                                     },
                                     "image": {
                                       "type": "string",
-                                      "format": "binary"
+                                      "description": "The user's image",
+                                      "example": "profile.png"
                                     }
                                   }
                                 }
@@ -686,48 +912,23 @@
             }
           },
           "400": {
-            "description": "Bad request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "string",
-                  "example": "Bad request, some thing goes wrong"
-                }
-              }
-            }
+            "$ref": "#/components/responses/BadRequest"
           },
           "401": {
-            "description": "Access token is missing or invalid",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "errors": {
-                      "type": "string",
-                      "example": "not authorized to access this page"
-                    }
-                  }
-                }
-              }
-            }
+            "$ref": "#/components/responses/Unauthorized"
           },
           "404": {
-            "description": "A product with the specified ID was not found.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "string",
-                  "example": "no product specified by this id"
-                }
-              }
-            }
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
           }
         }
       },
       "patch": {
-        "summary": "update a user data.",
+        "summary": " Updates a product.",
         "tags": ["product"],
+        "description": "Updates a product.",
         "security": [
           {
             "ApiKeyAuth": []
@@ -738,10 +939,11 @@
             "name": "productId",
             "in": "path",
             "required": true,
-            "description": "update the product data by id.",
+            "description": "The product's ID",
             "schema": {
               "type": "string",
-              "format": "byte"
+              "format": "uuid",
+              "example": "5e8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f"
             }
           }
         ],
@@ -752,75 +954,66 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "profile": {
+                  "images": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
+                    }
+                  },
+                  "name": {
                     "type": "string",
-                    "format": "binary"
+                    "example": "Product name"
+                  },
+                  "description": {
+                    "type": "string",
+                    "example": "Product description"
+                  },
+                  "price": {
+                    "type": "number",
+                    "example": "100"
                   }
-                },
-                "allOf": [
-                  {
-                    "$ref": "#/components/schemas/Product"
-                  }
-                ]
+                }
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "updated",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "string",
-                  "example": "product has successfully updated"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "string",
-                  "example": "Bad request, some thing goes wrong"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Access token is missing or invalid",
+            "description": "OK",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "errors": {
+                    "msg": {
                       "type": "string",
-                      "example": "not authorized to access this page"
+                      "description": "The message",
+                      "example": "Product updated"
                     }
                   }
                 }
               }
             }
           },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
           "404": {
-            "description": "A product with the specified ID was not found.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "string",
-                  "example": "no product specified by this id"
-                }
-              }
-            }
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
           }
         }
       },
       "delete": {
-        "summary": "deleted a product data.",
+        "summary": " Deletes a product.",
         "tags": ["product"],
+        "description": "Deletes a product.",
         "security": [
           {
             "ApiKeyAuth": []
@@ -831,69 +1024,50 @@
             "name": "productId",
             "in": "path",
             "required": true,
-            "description": "delete the product data by id.",
+            "description": "The product's ID",
             "schema": {
               "type": "string",
-              "format": "byte"
+              "format": "uuid",
+              "example": "5e8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f"
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "The resource was deleted successfully.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "string",
-                  "example": "product has been deleted..."
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "string",
-                  "example": "Bad request, some thing goes wrong"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Access token is missing or invalid",
+            "description": "OK",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "errors": {
+                    "msg": {
                       "type": "string",
-                      "example": "not authorized to access this page"
+                      "description": "The message",
+                      "example": "Product deleted"
                     }
                   }
                 }
               }
             }
           },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
           "404": {
-            "description": "A product with the specified ID was not found.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "string",
-                  "example": "no product specified by this id"
-                }
-              }
-            }
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
           }
         }
       }
     },
     "/product/{productId}/review": {
       "post": {
-        "summary": "Creates a review.",
+        "summary": " Adds a review.",
         "tags": ["review"],
         "security": [
           {
@@ -905,27 +1079,19 @@
             "name": "productId",
             "in": "path",
             "required": true,
-            "description": "productId to select the product which make a review on it",
+            "description": "The product's ID",
             "schema": {
               "type": "string",
-              "format": "byte"
+              "format": "uuid",
+              "example": "5e8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f"
             }
           }
         ],
-        "description": "make a review on specific product",
+        "description": "Adds a review.",
         "requestBody": {
           "required": true,
           "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "content": {
-                    "type": "string"
-                  }
-                }
-              }
-            }
+            "$ref": "#/components/schemas/Review"
           }
         },
         "responses": {
@@ -934,46 +1100,35 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "string",
-                  "example": "created successfully..."
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "string",
-                  "example": "Bad request, some thing goes wrong"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Access token is missing or invalid",
-            "content": {
-              "application/json": {
-                "schema": {
                   "type": "object",
                   "properties": {
-                    "errors": {
+                    "msg": {
                       "type": "string",
-                      "example": "not authorized to access this page"
+                      "description": "The message",
+                      "example": "Review added"
                     }
                   }
                 }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
           }
         }
       }
     },
     "/product/{productId}/review/{reviewId}": {
       "patch": {
-        "summary": "update a user review.",
+        "summary": " Updates a review.",
         "tags": ["review"],
+        "description": "Updates a review.",
         "security": [
           {
             "ApiKeyAuth": []
@@ -984,93 +1139,67 @@
             "name": "productId",
             "in": "path",
             "required": true,
-            "description": "productId to select the product which modify a review on it",
+            "description": "The product's ID",
             "schema": {
               "type": "string",
-              "format": "byte"
+              "format": "uuid",
+              "example": "5e8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f"
             }
           },
           {
             "name": "reviewId",
             "in": "path",
             "required": true,
-            "description": "update the user review on specific product .",
+            "description": "The review's ID",
             "schema": {
               "type": "string",
-              "format": "byte"
+              "format": "uuid",
+              "example": "5e8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f"
             }
           }
         ],
         "requestBody": {
           "required": true,
           "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "content": {
-                    "type": "string"
-                  }
-                }
-              }
-            }
+            "$ref": "#/components/schemas/Review"
           }
         },
         "responses": {
           "200": {
-            "description": "updated",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "string",
-                  "example": "ur review has been updated successfully"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "string",
-                  "example": "Bad request, some thing goes wrong"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Access token is missing or invalid",
+            "description": "OK",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "errors": {
+                    "msg": {
                       "type": "string",
-                      "example": "not authorized to access this page"
+                      "description": "The message",
+                      "example": "Review updated"
                     }
                   }
                 }
               }
             }
           },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
           "404": {
-            "description": "A review with the specified ID was not found.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "string",
-                  "example": "no review specified by this id"
-                }
-              }
-            }
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
           }
         }
       },
       "delete": {
-        "summary": "delete a user review.",
+        "summary": " Deletes a review.",
         "tags": ["review"],
+        "description": "Deletes a review.",
         "security": [
           {
             "ApiKeyAuth": []
@@ -1081,79 +1210,61 @@
             "name": "productId",
             "in": "path",
             "required": true,
-            "description": "productId to select the product which delete a review on it",
+            "description": "The product's ID",
             "schema": {
               "type": "string",
-              "format": "byte"
+              "format": "uuid",
+              "example": "5e8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f"
             }
           },
           {
             "name": "reviewId",
             "in": "path",
             "required": true,
-            "description": "delete the user review on specific product .",
+            "description": "The review's ID",
             "schema": {
               "type": "string",
-              "format": "byte"
+              "format": "uuid",
+              "example": "5e8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f"
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "The resource was deleted successfully.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "string",
-                  "example": "ur review has been removed successfully"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "string",
-                  "example": "Bad request, some thing goes wrong"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Access token is missing or invalid",
+            "description": "OK",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "errors": {
+                    "msg": {
                       "type": "string",
-                      "example": "not authorized to access this page"
+                      "description": "The message",
+                      "example": "Review deleted"
                     }
                   }
                 }
               }
             }
           },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
           "404": {
-            "description": "A review with the specified ID was not found.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "string",
-                  "example": "no review specified by this id"
-                }
-              }
-            }
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
           }
         }
       }
     },
     "/favItem": {
       "get": {
-        "summary": "Returns fav products .",
+        "summary": " Gets all favItems.",
         "tags": ["favItem"],
         "security": [
           {
@@ -1162,52 +1273,90 @@
         ],
         "responses": {
           "200": {
-            "description": "list of fav product.",
+            "description": "OK",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/Product"
+                    "type": "object",
+                    "properties": {
+                      "title": {
+                        "type": "string",
+                        "description": "The product title",
+                        "example": "Product title"
+                      },
+                      "price": {
+                        "type": "number",
+                        "description": "The product price",
+                        "example": "Product price"
+                      },
+                      "size": {
+                        "type": "object",
+                        "properties": {
+                          "height": {
+                            "type": "number",
+                            "description": "The product height",
+                            "example": "Product height"
+                          },
+                          "width": {
+                            "type": "number",
+                            "description": "The product width",
+                            "example": "Product width"
+                          },
+                          "name": {
+                            "type": "string",
+                            "description": "The size name",
+                            "example": "small"
+                          }
+                        }
+                      },
+                      "images": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "description": "The product image",
+                          "example": "image1.jpg"
+                        }
+                      },
+                      "user": {
+                        "type": "object",
+                        "properties": {
+                          "userName": {
+                            "type": "string",
+                            "description": "The user's name",
+                            "example": "John Doe"
+                          },
+                          "image": {
+                            "type": "string",
+                            "description": "The user's image",
+                            "example": "profile.png"
+                          }
+                        }
+                      }
+                    }
                   }
                 }
               }
             }
           },
           "400": {
-            "description": "Bad request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "string",
-                  "example": "Bad request, some thing goes wrong"
-                }
-              }
-            }
+            "$ref": "#/components/responses/BadRequest"
           },
           "401": {
-            "description": "Access token is missing or invalid",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "errors": {
-                      "type": "string",
-                      "example": "not authorized to access this page"
-                    }
-                  }
-                }
-              }
-            }
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
           }
         }
       }
     },
     "/favItem/{productId}": {
       "post": {
-        "summary": "add a product to a favItems.",
+        "summary": " Adds a favItem.",
         "tags": ["favItem"],
+        "description": "Adds a favItem.",
         "security": [
           {
             "ApiKeyAuth": []
@@ -1218,113 +1367,630 @@
             "name": "productId",
             "in": "path",
             "required": true,
-            "description": "productId to select the product which added to the list",
+            "description": "The product's ID",
             "schema": {
               "type": "string",
-              "format": "byte"
-            }
-          }
-        ],
-        "description": "added the specific product which identifed by id to fav list",
-        "responses": {
-          "201": {
-            "description": "Created",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "string",
-                  "example": "added to favList"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "string",
-                  "example": "Bad request, some thing goes wrong"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Access token is missing or invalid",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "errors": {
-                      "type": "string",
-                      "example": "not authorized to access this page"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "delete": {
-        "summary": "delete a product from a favItems.",
-        "tags": ["favItem"],
-        "security": [
-          {
-            "ApiKeyAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "productId",
-            "in": "path",
-            "required": true,
-            "description": "productId to select the product which remove form the list",
-            "schema": {
-              "type": "string",
-              "format": "byte"
+              "format": "uuid",
+              "example": "5e8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f"
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "remove the specific product which identifed by id from fav list",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "string",
-                  "example": "delete from favList"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "string",
-                  "example": "Bad request, some thing goes wrong"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Access token is missing or invalid",
+            "description": "OK",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "errors": {
+                    "msg": {
                       "type": "string",
-                      "example": "not authorized to access this page"
+                      "description": "The message",
+                      "example": "FavItem added"
                     }
                   }
                 }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },
+      "delete": {
+        "summary": " Deletes a favItem.",
+        "tags": ["favItem"],
+        "description": "Deletes a favItem.",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "description": "The product's ID",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "5e8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "msg": {
+                      "type": "string",
+                      "description": "The message",
+                      "example": "FavItem deleted"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/order": {
+      "post": {
+        "summary": " Creates an order.",
+        "tags": ["order"],
+        "description": "Creates an order.",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "product",
+            "in": "query",
+            "description": "The product's ID",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "5e8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Order"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "msg": {
+                      "type": "string",
+                      "description": "The message",
+                      "example": "Order created"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },
+      "get": {
+        "summary": " Gets all orders.",
+        "tags": ["order"],
+        "description": "Gets all orders, for aministrator only.",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "example": "5e8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f"
+                      },
+
+                      "totalPrice": {
+                        "type": "number",
+                        "example": "100"
+                      },
+                      "isDelivered": {
+                        "type": "boolean",
+                        "example": "true"
+                      },
+                      "isPaid": {
+                        "type": "boolean",
+                        "example": "true"
+                      },
+                      "createdAt": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2020-01-01T00:00:00.000Z"
+                      },
+                      "updatedAt": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2020-01-01T00:00:00.000Z"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "userOrder": {
+      "get": {
+        "summary": " Gets all user's order .",
+        "tags": ["order"],
+        "description": "Gets all user's order",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "_id": {
+                        "type": "string",
+                        "description":"order id",
+                        "format": "uuid",
+                        "example": "5e8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f"
+                      },
+
+                      "totalPrice": {
+                        "type": "number",
+                        "example": "150"
+                      },
+                      "product": {
+                        "type": "object",
+                        "properties": {
+                          "title": {
+                            "type": "string",
+                            "example": "product title"
+                          },
+                          "price": {
+                            "type": "number",
+                            "example": "100"
+                          },
+                          "size":{
+                            "type" : "object",
+                            "properties":{
+                              "name":{
+                                "type" : "string",
+                                "example" : "size name"
+                              },
+                              "hieght":{
+                                "type" : "number",
+                                "example" : "100"
+                              },
+                              "width":{
+                                "type" : "number",
+                                "example" : "100"
+                              }
+                              }
+                          },
+                          "images": {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "example": "image url"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/order/{orderId}": {
+      "get": {
+        "summary": " Gets an order.",
+        "tags": ["order"],
+        "description": "Gets an order.",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "path",
+            "description": "The order's ID",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "5e8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "_id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "example": "5e8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f"
+                    },
+                    "shippingAddress": {
+                      "type": "string",
+                      "example": "shipping address"
+                    },
+                    "totalPrice": {
+                      "type": "number",
+                      "example": "100"
+                    },
+                    "payment": {
+                      "type": "string",
+                      "example": "payment"
+                    },
+                    "isDelivered": {
+                      "type": "boolean",
+                      "example": "true"
+                    },
+                    "isPaid": {
+                      "type": "boolean",
+                      "example": "true"
+                    },
+                    "product": {
+                      "type": "object",
+                      "properties": {
+                        "title": {
+                          "type": "string",
+                          "example": "product title"
+                        },
+                        "images": {
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "example": "image url"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },
+      "patch": {
+        "summary": " Updates an order.",
+        "tags": ["order"],
+        "description": "Updates an order.",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "path",
+            "description": "The order's ID",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "5e8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Order"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "msg": {
+                      "type": "string",
+                      "description": "The message",
+                      "example": "Order updated successfully"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },
+      "delete": {
+        "summary": " Deletes an order.",
+        "tags": ["order"],
+        "description": "Deletes an order, for admin only.",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "path",
+            "description": "The order's ID",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "5e8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "msg": {
+                      "type": "string",
+                      "description": "The message",
+                      "example": "Order deleted successfully"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/order/{orderId}/pay": {
+      "patch": {
+        "summary": "Pays an order.",
+        "tags": ["order"],
+        "description": "change order status to paid",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "path",
+            "description": "The order's ID",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "5e8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "msg": {
+                      "type": "string",
+                      "description": "The message",
+                      "example": "Order paid successfully"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/order/{orderId}/deliver": {
+      "patch": {
+        "summary": "Delivers an order.",
+        "tags": ["order"],
+        "description": "change order status to delivered",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "path",
+            "description": "The order's ID",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "5e8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "msg": {
+                      "type": "string",
+                      "description": "The message",
+                      "example": "Order delivered successfully"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
           }
         }
       }
@@ -1334,121 +2000,282 @@
     "schemas": {
       "User": {
         "type": "object",
+        "required": ["userName", "fullName", "email", "password"],
         "properties": {
+          "_id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "5e8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f",
+            "description": "The user's ID",
+            "readOnly": true
+          },
           "userName": {
-            "type": "string"
+            "type": "string",
+            "description": "User name",
+            "example": "userName",
+            "minLength": 1,
+            "maxLength": 50,
+            "pattern": "^[a-zA-Z0-9_]*$"
           },
           "fullName": {
-            "type": "string"
+            "type": "string",
+            "description": "Full name",
+            "example": "fullName",
+            "minLength": 1,
+            "maxLength": 50,
+            "pattern": "^[a-zA-Z ]+$",
+            "nullable": false
           },
           "email": {
             "type": "string",
+            "description": "Email",
+            "example": "email@example.com",
+            "minLength": 1,
+            "maxLength": 254,
+            "pattern": "^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+$",
             "format": "email"
           },
           "password": {
             "type": "string",
-            "minLength": 6,
+            "description": "User password",
+            "pattern": "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[$@$!%*?&])[A-Za-z\\d$@$!%*?&]{8,}",
+            "minLength": 8,
+            "maxLength": 255,
             "format": "password"
           },
           "gender": {
             "type": "string",
+            "description": "User gender",
             "enum": ["male", "female"]
           },
           "birthday": {
             "type": "string",
+            "description": "User birthday",
             "format": "date"
           },
           "phoneNumber": {
             "type": "array",
             "items": {
               "type": "string"
-            }
+            },
+            "description": "User phone number",
+            "example": ["0912345678", "0987654321"]
           },
           "address": {
             "type": "array",
             "items": {
               "type": "string"
-            }
+            },
+            "description": "User address",
+            "example": ["address1", "address2"]
+          },
+          "role": {
+            "type": "string",
+            "description": "User role",
+            "enum": ["admin", "user"]
           }
-        },
-        "required": ["userName", "fullName", "email", "password"]
+        }
       },
       "Product": {
         "type": "object",
+        "required": ["title", "price", "size", "description", "images"],
         "properties": {
+          "_id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "5e8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f",
+            "description": "The product's ID",
+            "readOnly": true
+          },
           "title": {
-            "type": "string"
+            "type": "string",
+            "description": "Product title",
+            "example": "product title",
+            "pattern": "^[a-zA-Z0-9_]*$",
+            "minLength": 1,
+            "maxLength": 255,
+            "nullable": false
           },
           "price": {
-            "type": "integer"
+            "type": "integer",
+            "description": "Product price",
+            "example": 100
           },
           "description": {
             "type": "string",
-            "minLength": 5,
-            "maxLength": 555
+            "description": "Product description",
+            "example": "product description",
+            "minLength": 1,
+            "maxLength": 255
           },
           "size": {
             "type": "object",
             "properties": {
               "name": {
                 "type": "string",
-                "enum": ["medium", "small", "large", "x-large"]
+                "enum": ["medium", "small", "large", "x-large", "xx-large"],
+                "description": "Product size",
+                "example": "medium"
               },
               "hieght": {
-                "type": "integer"
+                "type": "integer",
+                "description": "Product height",
+                "example": 100
               },
               "width": {
-                "type": "integer"
+                "type": "integer",
+                "description": "Product width",
+                "example": 100
               }
-            },
-            "example": "name: small hieght: 130 width: 50 "
+            }
           },
           "color": {
-            "type": "string"
+            "type": "string",
+            "description": "Product color",
+            "example": "red"
           },
           "type": {
-            "type": "string"
-          },
-          "publishDate": {
             "type": "string",
-            "format": "date"
+            "description": "Product type",
+            "example": "type"
           },
           "purpose": {
             "type": "string",
-            "enum": ["rent", "sell"],
+            "enum": ["sale", "rent"],
+            "description": "Product purpose",
+            "example": "sale",
             "default": "rent"
           },
-          "Images": {
+          "images": {
             "type": "array",
             "items": {
               "type": "string",
-              "format": "binary"
+              "format": "binary",
+              "description": "Product images",
+              "example": "image1.jpg"
             }
           }
-        },
-        "required": [
-          "title",
-          "price",
-          "description",
-          "size",
-          "color",
-          "type",
-          "purpose",
-          "Images"
-        ]
+        }
       },
       "Review": {
         "type": "object",
+        "required": ["content"],
         "properties": {
           "_id": {
             "type": "string",
-            "format": "byte"
+            "format": "uuid",
+            "example": "5e8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f",
+            "description": "The review's ID",
+            "readOnly": true
           },
           "content": {
-            "type": "string"
+            "type": "string",
+            "description": "Review content",
+            "example": "review content",
+            "minLength": 1,
+            "maxLength": 255
           }
-        },
-        "required": ["content"]
+        }
+      },
+      "Order": {
+        "type": "object",
+        "required": ["shippingAddress", "payment"],
+        "properties": {
+          "_id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "5e8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f",
+            "description": "The order's ID",
+            "readOnly": true
+          },
+          "shippingAddress": {
+            "type": "string",
+            "description": "Shipping address",
+            "example": "shippingAddress",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "payment": {
+            "type": "string",
+            "description": "Payment method",
+            "enum": ["cash", "card"],
+            "example": "card",
+            "default": "cash",
+            "minLength": 1,
+            "maxLength": 255,
+            "nullable": false
+          }
+        }
+      }
+    },
+    "responses": {
+      "Unauthorized": {
+        "description": "Unauthorized",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "msg": {
+                  "type": "string",
+                  "description": "The error message",
+                  "example": "Unauthorized"
+                }
+              }
+            }
+          }
+        }
+      },
+      "BadRequest": {
+        "description": "Bad request",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "msg": {
+                  "type": "string",
+                  "description": "The error message",
+                  "example": "Bad request"
+                }
+              }
+            }
+          }
+        }
+      },
+      "InternalServerError": {
+        "description": "Internal Server Error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "msg": {
+                  "type": "string",
+                  "description": "The error message",
+                  "example": "Internal Server Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "Not Found",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "msg": {
+                  "type": "string",
+                  "description": "The error message",
+                  "example": "Not Found"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "securitySchemes": {

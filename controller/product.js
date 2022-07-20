@@ -5,18 +5,27 @@ const asyncWrapper = require("../middleware/asyncWrapper");
 const CustomError = require("../errorHandling/customError");
 // get all products
 const getProducts = asyncWrapper(async (req, res, next) => {
+  const product_properties =
+    req.role == "admin"
+      ? " title price publishDate "
+      : "title price images size ";
   // current page
   const page = req.query.p || 0;
   // the number of page will be returned
   const product_per_page = 5;
   // search by product title
-  const search = req.query.search || ""
-  const result = await Product.find({$or:[{title:{$regex:search,$options:"i"}},{description:{$regex:search,$options:"i"}}]})
+  const search = req.query.search || "";
+  const result = await Product.find({
+    $or: [
+      { title: { $regex: search, $options: "i" } },
+      { description: { $regex: search, $options: "i" } },
+    ],
+  })
     .populate({
       path: "user",
       select: "userName ",
     })
-    .select("title price images size ")
+    .select(`${product_properties}`)
     .skip(page * product_per_page)
     .limit(product_per_page);
   res.status(200).json(result);
@@ -38,7 +47,7 @@ const getProduct = asyncWrapper(async (req, res, next) => {
     })
     .select({
       __v: 0,
-    })
+    });
   if (!result) {
     return next(new CustomError("no product specified by this id", 404));
   }
