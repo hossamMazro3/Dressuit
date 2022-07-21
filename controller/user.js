@@ -38,7 +38,7 @@ const getUser = asyncWrapper(async (req, res, next) => {
   const result = await User.findById(req.params.id)
     .populate({
       path: "products",
-      select: "title description images ",
+      select: "title price images size ",
     })
     .select(
       "-password -__v -favItems -passwordResetCode -passwordResetExpires -passwordResetVerified -createdAt -updatedAt"

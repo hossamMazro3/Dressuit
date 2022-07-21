@@ -282,6 +282,27 @@
                                 "description": "The product's price",
                                 "example": 1.99
                               },
+                              "size":{
+                                "type": "object",
+                                "description": "The product's size",
+                                "properties": {
+                                  "width": {
+                                    "type": "number",
+                                    "description": "The product's width",
+                                    "example": 1.99
+                                  },
+                                  "height": {
+                                    "type": "number",
+                                    "description": "The product's height",
+                                    "example": 1.99
+                                  },
+                                  "name": {
+                                    "type": "number",
+                                    "description": "The product size name",
+                                    "example": 1.99
+                                  }
+                                }
+                              },
                               "images": {
                                 "type": "array",
                                 "description": "The product's images",

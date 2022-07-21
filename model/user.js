@@ -41,7 +41,6 @@ const userSchema = new mongoose.Schema(
     ],
     image: {
       type: String,
-      default: "uploads\\defualtProfile_Img.png",
     },
     role: {
       type: String,
